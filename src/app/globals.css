@@ -1,0 +1,84 @@
+@import "tailwindcss";
+
+:root {
+  --pine: #16352b;
+  --pine-deep: #0f241d;
+  --fairway: #2a5644;
+  --moss: #4d7a62;
+  --cream: #f4efe6;
+  --paper: #fbf8f2;
+  --gold: #b08d4a;
+  --gold-soft: #e6d5a8;
+  --ink: #1c1915;
+  --muted: #6d6458;
+  --rule: #d8d0c2;
+  --danger: #8a3b32;
+  --card: #fffcf7;
+}
+
+@theme inline {
+  --color-pine: var(--pine);
+  --color-pine-deep: var(--pine-deep);
+  --color-fairway: var(--fairway);
+  --color-moss: var(--moss);
+  --color-cream: var(--cream);
+  --color-paper: var(--paper);
+  --color-gold: var(--gold);
+  --color-gold-soft: var(--gold-soft);
+  --color-ink: var(--ink);
+  --color-muted: var(--muted);
+  --color-rule: var(--rule);
+  --color-danger: var(--danger);
+  --color-card: var(--card);
+  --font-sans: var(--font-body);
+  --font-serif: var(--font-display);
+  --font-mono: var(--font-score);
+}
+
+html {
+  background: var(--cream);
+}
+
+body {
+  background:
+    radial-gradient(1200px 420px at 50% -80px, rgba(176, 141, 74, 0.12), transparent),
+    var(--cream);
+  color: var(--ink);
+  font-family: var(--font-body), "Segoe UI", sans-serif;
+}
+
+.display {
+  font-family: var(--font-display), Georgia, serif;
+}
+
+.score {
+  font-family: var(--font-score), ui-monospace, monospace;
+  font-variant-numeric: tabular-nums;
+}
+
+.hairline {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--gold), transparent);
+}
+
+.panel {
+  background: var(--card);
+  border: 1px solid var(--rule);
+  box-shadow: 0 12px 40px rgba(22, 53, 43, 0.06);
+}
+
+@media print {
+  header,
+  footer,
+  .no-print {
+    display: none !important;
+  }
+
+  body {
+    background: white;
+  }
+
+  main {
+    padding: 0 !important;
+  }
+}
