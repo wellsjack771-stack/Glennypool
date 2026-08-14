@@ -98,7 +98,6 @@ export function EntryPicker({
         label={publicEntry ? "Your name" : "Pool entry name"}
         name="name"
         defaultValue={entry?.name}
-        placeholder="Jack Wilson"
         required
       />
       <label className="block">
