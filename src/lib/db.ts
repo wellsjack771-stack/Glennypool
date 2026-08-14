@@ -71,11 +71,13 @@ export async function readPool(): Promise<Pool> {
     };
   } catch (error) {
     if ((error as NodeJS.ErrnoException).code === "ENOENT") {
-      // Persistent volume is empty — try to load from repo's bundled data file
+      // Persistent volume is empty — fetch from GitHub
       try {
-        const bundledPath = path.join(process.cwd(), "data", "pool.json");
-        const raw = await readFile(bundledPath, "utf8");
-        const parsed = JSON.parse(raw) as Pool;
+        const resp = await fetch(
+          "https://raw.githubusercontent.com/wellsjack771-stack/Glennypool/main/data/pool.json"
+        );
+        if (!resp.ok) throw new Error("Failed to fetch pool data from GitHub");
+        const parsed = (await resp.json()) as Pool;
         const pool = {
           settings: { ...emptyPool().settings, ...parsed.settings },
           golfers: (parsed.golfers ?? []).map(normalizeGolfer),
@@ -87,14 +89,13 @@ export async function readPool(): Promise<Pool> {
         await writeFile(DATA_PATH, payload, "utf8");
         return pool;
       } catch {
-        // Bundled data file not found either — return empty pool
+        // GitHub fetch failed — return empty pool
         return emptyPool();
       }
     }
     throw error;
   }
 }
-
 export async function updatePool(
   mutator: (pool: Pool) => void | Promise<void>,
 ): Promise<Pool> {
