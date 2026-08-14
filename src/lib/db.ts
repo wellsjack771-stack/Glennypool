@@ -71,7 +71,25 @@ export async function readPool(): Promise<Pool> {
     };
   } catch (error) {
     if ((error as NodeJS.ErrnoException).code === "ENOENT") {
-      return emptyPool();
+      // Persistent volume is empty — try to load from repo's bundled data file
+      try {
+        const bundledPath = path.join(process.cwd(), "data", "pool.json");
+        const raw = await readFile(bundledPath, "utf8");
+        const parsed = JSON.parse(raw) as Pool;
+        const pool = {
+          settings: { ...emptyPool().settings, ...parsed.settings },
+          golfers: (parsed.golfers ?? []).map(normalizeGolfer),
+          entries: (parsed.entries ?? []).map(normalizeEntry),
+        };
+        // Save to persistent volume so it persists across restarts
+        await mkdir(DATA_DIR, { recursive: true });
+        const payload = `${JSON.stringify(pool, null, 2)}\n`;
+        await writeFile(DATA_PATH, payload, "utf8");
+        return pool;
+      } catch {
+        // Bundled data file not found either — return empty pool
+        return emptyPool();
+      }
     }
     throw error;
   }
