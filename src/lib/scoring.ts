@@ -2,12 +2,32 @@ import {
   EVENT_PAR,
   GROUPS,
   picksCount,
+  ROUND_PAR,
   type Entry,
   type Golfer,
   type GroupId,
   type Pool,
   type Settings,
 } from "./types";
+
+function looksLikeTeeTime(thru: string) {
+  return /\d{1,2}:\d{2}\s*(AM|PM)/i.test(thru);
+}
+
+function roundLooksFinished(thru: string) {
+  const text = thru.trim().toUpperCase();
+  return text === "F" || text === "F*" || text === "18" || /^F\b/.test(text);
+}
+
+function liveToPar(raw: string) {
+  const text = raw.replace(/−/g, "-").replace(/\s+/g, "").trim();
+  if (!text || text === "-" || text === "—") return null;
+  if (/^(E|EVEN)$/i.test(text)) return 0;
+  if (!/^[+-]?\d+$/.test(text)) return null;
+  const value = Number(text);
+  if (!Number.isFinite(value) || value < -30 || value > 40) return null;
+  return value;
+}
 
 export type PickRow = {
   golfer: Golfer | null;
@@ -45,9 +65,30 @@ export function roundScore(
   return posted;
 }
 
+export function liveRoundScore(
+  golfer: Golfer,
+  round: "r1" | "r2",
+  penalty = 100,
+): number | null {
+  if (golfer.status !== "active") return golfer[round] ?? penalty;
+  if (round === "r2") return golfer.r2;
+  if (
+    golfer.r1 != null &&
+    (roundLooksFinished(golfer.liveThru) || golfer.r1 >= 55 || golfer.r2 != null)
+  ) {
+    return golfer.r1;
+  }
+  const rel = liveToPar(golfer.liveToPar);
+  if (rel != null && !looksLikeTeeTime(golfer.liveThru)) {
+    return ROUND_PAR + rel;
+  }
+  if (golfer.r1 != null && golfer.r1 >= 55) return golfer.r1;
+  return null;
+}
+
 export function golferRoundTotal(golfer: Golfer, penalty = 100): number | null {
-  const r1 = roundScore(golfer, "r1", penalty);
-  const r2 = roundScore(golfer, "r2", penalty);
+  const r1 = liveRoundScore(golfer, "r1", penalty);
+  const r2 = liveRoundScore(golfer, "r2", penalty);
   if (golfer.status !== "active") {
     return (r1 ?? penalty) + (r2 ?? penalty);
   }
@@ -285,7 +326,11 @@ export function pickCounts(pool: Pool): Map<string, number> {
 }
 
 export function postedRoundCount(golfers: Golfer[]) {
-  const r1 = golfers.filter((golfer) => golfer.r1 != null || golfer.status !== "active").length;
-  const r2 = golfers.filter((golfer) => golfer.r2 != null || golfer.status !== "active").length;
+  const r1 = golfers.filter(
+    (golfer) => liveRoundScore(golfer, "r1") != null || golfer.status !== "active",
+  ).length;
+  const r2 = golfers.filter(
+    (golfer) => liveRoundScore(golfer, "r2") != null || golfer.status !== "active",
+  ).length;
   return { r1, r2, field: golfers.length };
 }

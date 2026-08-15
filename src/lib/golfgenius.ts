@@ -147,7 +147,11 @@ export async function discoverBoards(pageUrl: string): Promise<{
 
 function parseStroke(raw: string | number | null | undefined): number | null {
   if (raw == null) return null;
-  const text = String(raw).replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
+  const text = String(raw)
+    .replace(/<[^>]+>/g, " ")
+    .replace(/\*/g, "")
+    .replace(/\s+/g, " ")
+    .trim();
   if (!text || text === "-" || text === "—") return null;
   if (/^\d{2,3}$/.test(text)) {
     const value = Number(text);
@@ -288,6 +292,7 @@ export async function fetchLeaderboard(eventId: string): Promise<GGSnapshot> {
     const r1Json = agg.rounds?.find((round) => /^R1$/i.test(round.name || ""));
     const r2Json = agg.rounds?.find((round) => /^R2$/i.test(round.name || ""));
     const thru = parseThru(fromHtml?.thru || r1Json?.thru || r2Json?.thru || "");
+    const toPar = fromHtml?.toPar || agg.score || "";
     const r1 =
       fromHtml?.r1 ??
       parseStroke(r1Json?.total) ??
@@ -300,7 +305,7 @@ export async function fetchLeaderboard(eventId: string): Promise<GGSnapshot> {
       name,
       aggregateId: String(agg.id_str || ""),
       position: agg.position || "",
-      toPar: fromHtml?.toPar || agg.score || "",
+      toPar: toPar === "-" ? "" : toPar,
       r1,
       r2,
       thru,
@@ -338,17 +343,20 @@ export function applySnapshot(pool: Pool, snapshot: GGSnapshot) {
     if (!player) continue;
     matched += 1;
     golfer.ggId = player.aggregateId;
+    const finished = roundFinished(player.thru);
     golfer.liveThru = player.thru;
     golfer.liveToPar = player.toPar === "-" ? "" : player.toPar;
     golfer.status = player.status;
-    if (player.r1 != null) {
+    if (player.r1 != null && (finished || player.r1 >= 55)) {
       golfer.r1 = player.r1;
       scored += 1;
-    } else if (player.status === "active" && !roundFinished(player.thru)) {
-      golfer.r1 = null;
+    } else if (player.status === "active" && !finished) {
+      golfer.r1 = golfer.r1 != null && golfer.r1 >= 55 ? golfer.r1 : null;
+      if (golfer.liveToPar) scored += 1;
     }
-    if (player.r2 != null) golfer.r2 = player.r2;
-    else if (player.status === "active") golfer.r2 = golfer.r2;
+    if (player.r2 != null && (player.r2 >= 55 || /r2/i.test(player.thru))) {
+      golfer.r2 = player.r2;
+    }
   }
   pool.settings.ggLastSyncAt = snapshot.fetchedAt;
   pool.settings.ggLastSyncStatus = `${snapshot.eventName}: ${matched} matched, ${scored} with a posted round`;

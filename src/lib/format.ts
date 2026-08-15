@@ -25,6 +25,20 @@ export function parseToPar(raw: FormDataEntryValue | string | null) {
   return Math.round(value);
 }
 
+export function parseLiveToPar(raw: string | null | undefined) {
+  if (raw == null) return null;
+  const text = String(raw)
+    .replace(/−/g, "-")
+    .replace(/\s+/g, "")
+    .trim();
+  if (!text || text === "-" || text === "—" || text === "*") return null;
+  if (/^(E|EVEN)$/i.test(text)) return 0;
+  if (!/^[+-]?\d+$/.test(text)) return null;
+  const value = Number(text);
+  if (!Number.isFinite(value) || value < -30 || value > 40) return null;
+  return value;
+}
+
 export const TIEBREAKER_OPTIONS = Array.from({ length: 51 }, (_, i) => i - 20);
 
 export function formatScore(value: number | null | undefined) {

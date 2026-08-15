@@ -91,10 +91,32 @@ export function revealAt(settings: Pick<Settings, "dates" | "year">) {
   return Number.isNaN(date.getTime()) ? null : date;
 }
 
-export function picksRevealed(settings: Pick<Settings, "dates" | "year">) {
+function looksLikeTeeTime(thru: string) {
+  return /\d{1,2}:\d{2}\s*(AM|PM)/i.test(thru);
+}
+
+export function playHasStarted(
+  settings: Pick<Settings, "dates" | "year">,
+  golfers: Pick<Golfer, "r1" | "r2" | "liveThru" | "liveToPar">[],
+) {
   const at = revealAt(settings);
-  if (!at) return false;
-  return Date.now() >= at.getTime();
+  if (at && Date.now() >= at.getTime()) return true;
+  const cutoff = payCutoffAt(settings, golfers);
+  if (cutoff && Date.now() >= cutoff.getTime()) return true;
+  return golfers.some((golfer) => {
+    if (golfer.r1 != null || golfer.r2 != null) return true;
+    const thru = golfer.liveThru ?? "";
+    if (thru && !looksLikeTeeTime(thru)) return true;
+    const toPar = (golfer.liveToPar ?? "").trim();
+    return Boolean(toPar && toPar !== "-" && toPar !== "—");
+  });
+}
+
+export function picksRevealed(
+  settings: Pick<Settings, "dates" | "year">,
+  golfers: Pick<Golfer, "r1" | "r2" | "liveThru" | "liveToPar">[] = [],
+) {
+  return playHasStarted(settings, golfers);
 }
 
 export function revealLabel(settings: Pick<Settings, "dates" | "year">) {
