@@ -86,7 +86,12 @@ export default async function AdminDeskPage() {
           >
             <span className="flex items-center gap-2">
               <PaidMark paid={row.entry.paid} />
-              {row.entry.name}
+              <span>
+                <span className="block">{row.entry.name}</span>
+                {row.entry.ownerName ? (
+                  <span className="text-xs text-muted">{row.entry.ownerName}</span>
+                ) : null}
+              </span>
             </span>
             <span className="score">{row.total ?? "—"}</span>
           </div>
