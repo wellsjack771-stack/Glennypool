@@ -41,7 +41,7 @@ export default async function HomePage() {
   const posted = postedRoundCount(pool.golfers);
   const needed = picksCount(pool.settings) - pool.settings.voidCount;
   const admin = await isAdmin();
-  const revealed = admin || picksRevealed(pool.settings);
+  const revealed = admin || picksRevealed(pool.settings, pool.golfers);
 
   return (
     <div className="space-y-8">
@@ -91,7 +91,7 @@ export default async function HomePage() {
             <p className="mt-2 text-sm text-muted">
               {revealed
                 ? "Waiting on scores."
-                : `${pool.entries.length} squad${pool.entries.length === 1 ? "" : "s"} locked in. Names and picks stay hidden until ${revealLabel(pool.settings)} AT.`}
+                : `${pool.entries.length} squad${pool.entries.length === 1 ? "" : "s"} locked in. Picks stay hidden until ${revealLabel(pool.settings)} AT.`}
             </p>
           )}
         </div>
@@ -107,21 +107,12 @@ export default async function HomePage() {
         />
       </div>
 
-      {revealed ? (
-        <StandingsTable
-          standings={standings}
-          voidCount={pool.settings.voidCount}
-        />
-      ) : (
-        <div className="panel px-6 py-12 text-center">
-          <p className="display text-2xl text-pine">Picks are sealed</p>
-          <p className="mx-auto mt-3 max-w-lg text-muted">
-            Nobody can see anyone else&apos;s entry until Saturday morning at
-            7:00 AM ({revealLabel(pool.settings)} AT). Pay by then or your
-            squad is deleted.
-          </p>
-        </div>
-      )}
+      <StandingsTable
+        standings={standings}
+        voidCount={pool.settings.voidCount}
+        hideSquads={!revealed}
+        showOwner={admin}
+      />
     </div>
   );
 }
