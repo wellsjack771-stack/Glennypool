@@ -41,6 +41,7 @@ function normalizeEntry(raw: Partial<Entry>): Entry {
   return {
     id: raw.id ?? crypto.randomUUID(),
     name: raw.name ?? "",
+    ownerName: String(raw.ownerName ?? "").trim(),
     golferIds: raw.golferIds ?? [],
     tiebreakerScore:
       typeof raw.tiebreakerScore === "number" ? raw.tiebreakerScore : null,
@@ -71,31 +72,12 @@ export async function readPool(): Promise<Pool> {
     };
   } catch (error) {
     if ((error as NodeJS.ErrnoException).code === "ENOENT") {
-      // Persistent volume is empty — fetch from GitHub
-      try {
-        const resp = await fetch(
-          "https://raw.githubusercontent.com/wellsjack771-stack/Glennypool/main/data/pool.json"
-        );
-        if (!resp.ok) throw new Error("Failed to fetch pool data from GitHub");
-        const parsed = (await resp.json()) as Pool;
-        const pool = {
-          settings: { ...emptyPool().settings, ...parsed.settings },
-          golfers: (parsed.golfers ?? []).map(normalizeGolfer),
-          entries: (parsed.entries ?? []).map(normalizeEntry),
-        };
-        // Save to persistent volume so it persists across restarts
-        await mkdir(DATA_DIR, { recursive: true });
-        const payload = `${JSON.stringify(pool, null, 2)}\n`;
-        await writeFile(DATA_PATH, payload, "utf8");
-        return pool;
-      } catch {
-        // GitHub fetch failed — return empty pool
-        return emptyPool();
-      }
+      return emptyPool();
     }
     throw error;
   }
 }
+
 export async function updatePool(
   mutator: (pool: Pool) => void | Promise<void>,
 ): Promise<Pool> {

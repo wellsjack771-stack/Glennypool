@@ -1,136 +1,124 @@
 import Link from "next/link";
-import { notFound } from "next/navigation";
-import { LiveRefresh } from "@/components/LiveRefresh";
+import { EntryAdminControls } from "@/components/EntryAdminControls";
+import { EntryPicker } from "@/components/EntryPicker";
 import { PaidMark } from "@/components/PaidMark";
-import { PayBox } from "@/components/PayBox";
-import { isAdmin } from "@/lib/auth";
 import { readPool } from "@/lib/db";
-import { formatRank, formatScore, formatToPar } from "@/lib/format";
-import { ownsEntry } from "@/lib/mine";
-import { payCutoffLabel, picksRevealed, revealLabel } from "@/lib/cutoff";
-import { rankEntries, liveRoundScore, roundScore } from "@/lib/scoring";
-import { groupLabel } from "@/lib/types";
+import { formatToPar } from "@/lib/format";
+import { isValidSquad } from "@/lib/scoring";
+import { picksCount } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
 
-export default async function EntryPage({
-  params,
+export default async function EntriesAdminPage({
   searchParams,
 }: {
-  params: Promise<{ id: string }>;
-  searchParams: Promise<{ locked?: string }>;
+  searchParams: Promise<{ edit?: string }>;
 }) {
-  const { id } = await params;
-  const { locked } = await searchParams;
+  const { edit } = await searchParams;
   const pool = await readPool();
-  const standings = rankEntries(pool);
-  const row = standings.find((item) => item.entry.id === id);
-  if (!row) notFound();
-  const penalty = pool.settings.penaltyScore;
-  const admin = await isAdmin();
-  const mine = await ownsEntry(id);
-  const revealed = admin || mine || picksRevealed(pool.settings, pool.golfers);
+  const editing = pool.entries.find((entry) => entry.id === edit);
+  const golfersById = new Map(pool.golfers.map((golfer) => [golfer.id, golfer]));
+  const needed = picksCount(pool.settings);
 
   return (
-    <div className="space-y-8">
-      <div>
-        <Link href="/" className="text-sm text-fairway">
-          ← Leaderboard
-        </Link>
-        <p className="mt-4 text-[11px] tracking-[0.22em] text-gold uppercase">
-          Pool entry
+    <div className="grid gap-10 lg:grid-cols-[1.15fr_0.85fr]">
+      <section>
+        <p className="text-[11px] tracking-[0.22em] text-gold uppercase">
+          Pool book
         </p>
-        <h1 className="mt-2 flex flex-wrap items-center gap-3 display text-4xl text-pine sm:text-5xl">
-          {revealed ? row.entry.name : "Hidden entry"}
-          {revealed ? <PaidMark paid={row.entry.paid} /> : null}
+        <h1 className="display mt-2 text-4xl text-pine">
+          {editing ? `Edit ${editing.name}` : "Entries"}
         </h1>
-        <p className="mt-2 text-muted">
-          {revealed ? (
+        <p className="mt-2 mb-6 text-muted">
+          Real name is private (you only). Entry name is public and can be
+          anything. 2 golfers from each group, plus the champion&apos;s
+          36-hole score to par as the tiebreaker (Even, −1, +2).
+          {pool.settings.entriesOpen ? (
             <>
-              {row.eligible ? formatRank(row.rank, row.tied) : "Unranked"} ·
-              total{" "}
-              <span className="score text-ink">{formatScore(row.total)}</span>
-              {row.entry.tiebreakerScore != null ? (
-                <>
-                  {" "}
-                  · TB{" "}
-                  <span className="score">
-                    {formatToPar(row.entry.tiebreakerScore)}
-                  </span>
-                </>
-              ) : null}
+              {" "}
+              Members can also enter themselves at{" "}
+              <Link href="/enter" className="text-fairway">
+                /enter
+              </Link>
+              .
             </>
           ) : (
-            <>
-              Squads stay private until {revealLabel(pool.settings)} AT.
-            </>
+            " Public entries are closed."
           )}
         </p>
-        <div className="mt-2">
-          <LiveRefresh />
-        </div>
-      </div>
-      {mine && !row.entry.paid ? (
-        <PayBox
-          fee={pool.settings.entryFee || 15}
-          email={pool.settings.etransferEmail || "wellsjack771@gmail.com"}
-          cutoff={payCutoffLabel(pool.golfers, pool.settings)}
-          locked={locked === "1"}
-        />
-      ) : null}
-      {!revealed ? (
-        <div className="panel px-6 py-10 text-center text-muted">
-          This squad is sealed until Saturday 7:00 AM.
-        </div>
-      ) : (
-      <div className="panel overflow-hidden">
-        <table className="w-full text-left">
-          <thead className="bg-pine text-[11px] tracking-[0.16em] text-gold-soft uppercase">
-            <tr>
-              <th className="px-4 py-3 font-medium">Golfer</th>
-              <th className="px-4 py-3 font-medium">Group</th>
-              <th className="px-4 py-3 font-medium">Day 1</th>
-              <th className="px-4 py-3 font-medium">Day 2</th>
-              <th className="px-4 py-3 font-medium">Total</th>
-              <th className="px-4 py-3 font-medium">Used</th>
-            </tr>
-          </thead>
-          <tbody>
-            {row.picks.map((pick) => (
-              <tr
-                key={pick.golferId}
-                className={`border-t border-rule ${pick.voided ? "text-muted" : ""}`}
-              >
-                <td
-                  className={`px-4 py-3 ${pick.voided ? "line-through" : "font-medium"}`}
+        {pool.golfers.length === 0 ? (
+          <p className="text-muted">
+            Add the championship field and assign groups before taking entries.
+          </p>
+        ) : (
+          <div className="panel p-6">
+            <EntryPicker
+              key={editing?.id ?? "new"}
+              golfers={pool.golfers}
+              entry={editing}
+              settings={pool.settings}
+            />
+          </div>
+        )}
+      </section>
+      <section>
+        <h2 className="display mb-4 text-2xl text-pine">
+          {pool.entries.length} in the pool
+        </h2>
+        <p className="mb-3 text-sm text-muted">
+          Mark paid when the ${pool.settings.entryFee} e-transfer lands. Unpaid
+          names show on the public board until you confirm. At the first tee
+          time Saturday, unpaid entries are deleted.
+        </p>
+        <ul className="panel divide-y divide-rule">
+          {pool.entries.length === 0 ? (
+            <li className="px-4 py-8 text-muted">No entries yet.</li>
+          ) : (
+            pool.entries.map((entry) => {
+              const valid = isValidSquad(
+                entry.golferIds,
+                golfersById,
+                pool.settings,
+              );
+              return (
+                <li
+                  key={entry.id}
+                  className="flex items-center justify-between gap-3 px-4 py-3"
                 >
-                  {pick.label}
-                </td>
-                <td className="px-4 py-3 text-sm text-muted">
-                  {groupLabel(pick.group)}
-                </td>
-                <td className="score px-4 py-3">
-                  {formatScore(
-                    pick.golfer ? liveRoundScore(pick.golfer, "r1", penalty) : null,
-                  )}
-                </td>
-                <td className="score px-4 py-3">
-                  {formatScore(
-                    pick.golfer ? roundScore(pick.golfer, "r2", penalty) : null,
-                  )}
-                </td>
-                <td className="score px-4 py-3 font-semibold">
-                  {formatScore(pick.total)}
-                </td>
-                <td className="px-4 py-3 text-xs tracking-[0.14em] uppercase">
-                  {pick.voided ? "Void" : pick.counting ? "Counts" : "—"}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-      )}
+                  <div className="flex items-start gap-3">
+                    <PaidMark paid={entry.paid} />
+                    <div>
+                      <p className="font-medium">{entry.name}</p>
+                      <p className="text-xs text-muted">
+                        {entry.ownerName ? `${entry.ownerName} · ` : ""}
+                        {entry.golferIds.length}/{needed} picks
+                        {entry.tiebreakerScore != null
+                          ? ` · TB ${formatToPar(entry.tiebreakerScore)}`
+                          : " · no TB"}
+                        {valid ? "" : " · incomplete"}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex flex-col items-end gap-1">
+                    <Link
+                      href={`/admin/entries?edit=${entry.id}`}
+                      className="text-sm text-fairway"
+                    >
+                      Edit
+                    </Link>
+                    <EntryAdminControls
+                      id={entry.id}
+                      name={entry.name}
+                      ownerName={entry.ownerName}
+                      paid={entry.paid}
+                    />
+                  </div>
+                </li>
+              );
+            })
+          )}
+        </ul>
+      </section>
     </div>
   );
 }

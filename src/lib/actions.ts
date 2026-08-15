@@ -237,6 +237,7 @@ export async function saveEntry(
   const publicSubmit = String(formData.get("source")) === "public";
   const id = admin && !publicSubmit ? String(formData.get("id") ?? "") : "";
   const name = String(formData.get("name") ?? "").trim();
+  const ownerName = String(formData.get("ownerName") ?? "").trim();
   const tiebreakerScore = parseToPar(formData.get("tiebreakerScore"));
   const golferIds = formData
     .getAll("golferIds")
@@ -244,6 +245,9 @@ export async function saveEntry(
     .filter(Boolean);
   const uniqueIds = [...new Set(golferIds)];
 
+  if (!ownerName) {
+    return { error: "Your real name is required. Only the admin can see it." };
+  }
   if (!name) return { error: "Entry name is required." };
   if (tiebreakerScore == null) {
     return { error: "Pick a tiebreaker (Even, −1, +2, etc.)." };
@@ -280,7 +284,7 @@ export async function saveEntry(
       entry.id !== id && entry.name.toLowerCase() === name.toLowerCase(),
   );
   if (taken) {
-    return { error: "That name is already in the pool. Add a last name or initial." };
+    return { error: "That entry name is already on the board. Pick another." };
   }
 
   const entryId = id || crypto.randomUUID();
@@ -290,6 +294,7 @@ export async function saveEntry(
       const entry = next.entries.find((row) => row.id === id);
       if (!entry) throw new Error("Entry not found.");
       entry.name = name;
+      entry.ownerName = ownerName;
       entry.golferIds = picks;
       entry.tiebreakerScore = tiebreakerScore;
       if (admin && !publicSubmit) entry.paid = markPaid;
@@ -297,6 +302,7 @@ export async function saveEntry(
       next.entries.push({
         id: entryId,
         name,
+        ownerName,
         golferIds: picks,
         tiebreakerScore,
         paid: markPaid,
