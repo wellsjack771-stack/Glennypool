@@ -49,7 +49,7 @@ export type Golfer = {
 export type Entry = {
   id: string;
   name: string;
-  ownerName: string;
+  ownerName?: string;
   golferIds: string[];
   tiebreakerScore: number | null;
   paid: boolean;
