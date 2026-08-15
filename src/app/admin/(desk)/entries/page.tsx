@@ -30,8 +30,9 @@ export default async function EntriesAdminPage({
           {editing ? `Edit ${editing.name}` : "Entries"}
         </h1>
         <p className="mt-2 mb-6 text-muted">
-          2 golfers from each group, plus the champion&apos;s 36-hole score to
-          par as the tiebreaker (Even, −1, +2).
+          Real name is private (you only). Entry name is public and can be
+          anything. 2 golfers from each group, plus the champion&apos;s
+          36-hole score to par as the tiebreaker (Even, −1, +2).
           {pool.settings.entriesOpen ? (
             <>
               {" "}
@@ -89,6 +90,7 @@ export default async function EntriesAdminPage({
                     <div>
                       <p className="font-medium">{entry.name}</p>
                       <p className="text-xs text-muted">
+                        {entry.ownerName ? `${entry.ownerName} · ` : ""}
                         {entry.golferIds.length}/{needed} picks
                         {entry.tiebreakerScore != null
                           ? ` · TB ${formatToPar(entry.tiebreakerScore)}`
@@ -106,7 +108,11 @@ export default async function EntriesAdminPage({
                     </Link>
                     <EntryAdminControls
                       id={entry.id}
-                      name={entry.name}
+                      name={
+                        entry.ownerName
+                          ? `${entry.name} (${entry.ownerName})`
+                          : entry.name
+                      }
                       paid={entry.paid}
                     />
                   </div>
