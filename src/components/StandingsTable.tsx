@@ -7,9 +7,13 @@ import { groupLabel } from "@/lib/types";
 export function StandingsTable({
   standings,
   voidCount,
+  hideSquads = false,
+  showOwner = false,
 }: {
   standings: RankedEntry[];
   voidCount: number;
+  hideSquads?: boolean;
+  showOwner?: boolean;
 }) {
   if (standings.length === 0) {
     return (
@@ -27,9 +31,15 @@ export function StandingsTable({
             <th className="px-4 py-3 font-medium">Pos</th>
             <th className="px-4 py-3 font-medium">Paid</th>
             <th className="px-4 py-3 font-medium">Entry</th>
-            <th className="px-4 py-3 font-medium">Total</th>
-            <th className="px-4 py-3 font-medium">Thru</th>
-            <th className="px-4 py-3 font-medium">Squad</th>
+            {hideSquads ? (
+              <th className="px-4 py-3 font-medium">Squad</th>
+            ) : (
+              <>
+                <th className="px-4 py-3 font-medium">Total</th>
+                <th className="px-4 py-3 font-medium">Thru</th>
+                <th className="px-4 py-3 font-medium">Squad</th>
+              </>
+            )}
           </tr>
         </thead>
         <tbody>
@@ -51,49 +61,61 @@ export function StandingsTable({
                 >
                   {row.entry.name}
                 </Link>
+                {showOwner && row.entry.ownerName ? (
+                  <span className="mt-0.5 block text-xs text-muted">
+                    {row.entry.ownerName}
+                  </span>
+                ) : null}
                 {row.tied && row.tiebreakerDiff != null ? (
                   <span className="mt-0.5 block text-xs text-muted">
                     TB {row.tiebreakerDiff} off
                   </span>
                 ) : null}
               </td>
-              <td className="score px-4 py-3 text-lg font-semibold">
-                {formatScore(row.total)}
-              </td>
-              <td className="score px-4 py-3 text-muted">
-                {row.countingCount}/6
-              </td>
-              <td className="px-4 py-3">
-                <div className="flex flex-wrap gap-x-3 gap-y-1 text-sm">
-                  {row.picks.map((pick) => (
-                    <span
-                      key={pick.golferId}
-                      className={
-                        pick.voided
-                          ? "text-muted line-through decoration-gold"
-                          : pick.counting
-                            ? "text-ink"
-                            : "text-muted"
-                      }
-                      title={groupLabel(pick.group)}
-                    >
-                      {pick.label}
-                      <span className="score ml-1 text-xs">
-                        {formatScore(pick.total)}
-                      </span>
-                    </span>
-                  ))}
-                </div>
-              </td>
+              {hideSquads ? (
+                <td className="px-4 py-3 text-sm text-muted">
+                  Squad sealed until Saturday 7:00 AM
+                </td>
+              ) : (
+                <>
+                  <td className="score px-4 py-3 text-lg font-semibold">
+                    {formatScore(row.total)}
+                  </td>
+                  <td className="score px-4 py-3 text-muted">
+                    {row.countingCount}/6
+                  </td>
+                  <td className="px-4 py-3">
+                    <div className="flex flex-wrap gap-x-3 gap-y-1 text-sm">
+                      {row.picks.map((pick) => (
+                        <span
+                          key={pick.golferId}
+                          className={
+                            pick.voided
+                              ? "text-muted line-through decoration-gold"
+                              : pick.counting
+                                ? "text-ink"
+                                : "text-muted"
+                          }
+                          title={groupLabel(pick.group)}
+                        >
+                          {pick.label}
+                          <span className="score ml-1 text-xs">
+                            {formatScore(pick.total)}
+                          </span>
+                        </span>
+                      ))}
+                    </div>
+                  </td>
+                </>
+              )}
             </tr>
           ))}
         </tbody>
       </table>
       <p className="border-t border-rule px-4 py-3 text-xs text-muted">
-        Struck names are the {voidCount} voided scores. Lowest remaining total
-        wins. Ties go to the closest predicted championship score to par. A
-        check mark means the $15 e-transfer is confirmed. Unpaid entries are
-        deleted at the first tee time Saturday.
+        {hideSquads
+          ? "Entry names and paid status are public. Squads stay hidden until Saturday 7:00 AM. Unpaid entries are deleted at the first tee."
+          : `Struck names are the ${voidCount} voided scores. Lowest remaining total wins. Ties go to the closest predicted championship score to par. A check mark means the $15 e-transfer is confirmed. Unpaid entries are deleted at the first tee time Saturday.`}
       </p>
     </div>
   );

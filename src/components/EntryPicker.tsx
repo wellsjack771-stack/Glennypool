@@ -14,9 +14,9 @@ import {
   type GroupId,
   type Settings,
 } from "@/lib/types";
-import { Field } from "./Field";
-import { PayBox } from "./PayBox";
-import { SubmitButton } from "./SubmitButton";
+import { Field } from "@/components/Field";
+import { PayBox } from "@/components/PayBox";
+import { SubmitButton } from "@/components/SubmitButton";
 
 function sortGolfers(a: Golfer, b: Golfer) {
   const hcp = (a.handicap ?? 99) - (b.handicap ?? 99);
@@ -95,11 +95,29 @@ export function EntryPicker({
         <input key={id} type="hidden" name="golferIds" value={id} />
       ))}
       <Field
-        label={publicEntry ? "Your name" : "Pool entry name"}
-        name="name"
-        defaultValue={entry?.name}
+        label={publicEntry ? "Your name" : "Real name"}
+        name="ownerName"
+        defaultValue={entry?.ownerName}
+        placeholder="Jack Wells"
+        autoComplete="name"
         required
       />
+      <p className="-mt-4 text-sm text-muted">
+        {publicEntry
+          ? "Private — only the pool admin can see this. Used to match your e-transfer."
+          : "Private. Shown only in admin, not on the public board."}
+      </p>
+      <Field
+        label="Entry name"
+        name="name"
+        defaultValue={entry?.name}
+        placeholder="Team name, nickname, anything"
+        autoComplete="off"
+        required
+      />
+      <p className="-mt-4 text-sm text-muted">
+        Public. This is what shows on the leaderboard. Can be anything.
+      </p>
       <label className="block">
         <span className="mb-1.5 block text-[11px] font-semibold tracking-[0.16em] text-fairway uppercase">
           Tiebreaker · champion&apos;s 36-hole score to par

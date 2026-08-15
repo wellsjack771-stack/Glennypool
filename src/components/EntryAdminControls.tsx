@@ -26,7 +26,7 @@ export function EntryAdminControls({
       <form
         action={deleteEntry}
         onSubmit={(event) => {
-          if (!window.confirm(`Delete ${name}'s entry? This cannot be undone.`)) {
+          if (!window.confirm(`Delete ${name}? This cannot be undone.`)) {
             event.preventDefault();
           }
         }}
