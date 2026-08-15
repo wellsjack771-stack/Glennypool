@@ -8,7 +8,7 @@ import { readPool } from "@/lib/db";
 import { formatRank, formatScore, formatToPar } from "@/lib/format";
 import { ownsEntry } from "@/lib/mine";
 import { payCutoffLabel, picksRevealed, revealLabel } from "@/lib/cutoff";
-import { rankEntries, roundScore } from "@/lib/scoring";
+import { rankEntries, liveRoundScore, roundScore } from "@/lib/scoring";
 import { groupLabel } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
@@ -29,7 +29,7 @@ export default async function EntryPage({
   const penalty = pool.settings.penaltyScore;
   const admin = await isAdmin();
   const mine = await ownsEntry(id);
-  const revealed = admin || mine || picksRevealed(pool.settings);
+  const revealed = admin || mine || picksRevealed(pool.settings, pool.golfers);
 
   return (
     <div className="space-y-8">
@@ -44,6 +44,9 @@ export default async function EntryPage({
           {revealed ? row.entry.name : "Hidden entry"}
           {revealed ? <PaidMark paid={row.entry.paid} /> : null}
         </h1>
+        {admin && row.entry.ownerName ? (
+          <p className="mt-1 text-sm text-muted">Entered by {row.entry.ownerName}</p>
+        ) : null}
         <p className="mt-2 text-muted">
           {revealed ? (
             <>
@@ -111,7 +114,7 @@ export default async function EntryPage({
                 </td>
                 <td className="score px-4 py-3">
                   {formatScore(
-                    pick.golfer ? roundScore(pick.golfer, "r1", penalty) : null,
+                    pick.golfer ? liveRoundScore(pick.golfer, "r1", penalty) : null,
                   )}
                 </td>
                 <td className="score px-4 py-3">
