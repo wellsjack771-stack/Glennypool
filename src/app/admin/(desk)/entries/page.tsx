@@ -67,8 +67,8 @@ export default async function EntriesAdminPage({
         </h2>
         <p className="mb-3 text-sm text-muted">
           Mark paid when the ${pool.settings.entryFee} e-transfer lands. Unpaid
-          names show on the public board until you confirm. At the first tee
-          time Saturday, unpaid entries are deleted.
+          names show on the public board until you confirm. Delete an unpaid
+          entry yourself when you are ready.
         </p>
         <ul className="panel divide-y divide-rule">
           {pool.entries.length === 0 ? (
@@ -108,11 +108,8 @@ export default async function EntriesAdminPage({
                     </Link>
                     <EntryAdminControls
                       id={entry.id}
-                      name={
-                        entry.ownerName
-                          ? `${entry.name} (${entry.ownerName})`
-                          : entry.name
-                      }
+                      name={entry.name}
+                      ownerName={entry.ownerName}
                       paid={entry.paid}
                     />
                   </div>
