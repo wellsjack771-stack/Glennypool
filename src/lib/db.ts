@@ -4,7 +4,10 @@ import { mkdir, readFile, rename, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { DEFAULT_SETTINGS, isGolferStatus, parseGroup, type Entry, type Golfer, type Pool } from "./types";
 
-const DATA_DIR = path.resolve(process.env.DATA_DIR || path.join(process.cwd(), "data"));
+const DATA_DIR = path.resolve(
+  /* turbopackIgnore: true */ process.env.DATA_DIR ||
+    path.join(process.cwd(), "data"),
+);
 const DATA_PATH = path.join(DATA_DIR, "pool.json");
 const TMP_PATH = path.join(DATA_DIR, "pool.json.tmp");
 
