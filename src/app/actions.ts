@@ -22,7 +22,7 @@ import { nameKey } from "@/lib/golfgenius";
 import { rememberEntry } from "@/lib/mine";
 import { playHasStarted } from "@/lib/cutoff";
 import { isValidSquad } from "@/lib/scoring";
-import type { GolferStatus } from "@/lib/types";
+import { isGolferStatus, type GolferStatus } from "@/lib/types";
 
 function refresh() {
   revalidatePath("/", "layout");
@@ -188,9 +188,7 @@ export async function saveAllScores(formData: FormData) {
       if (field === "group") golfer.group = parseGroupField(value);
       if (field === "status") {
         const status = String(value) as GolferStatus;
-        golfer.status = ["active", "wd", "dq", "dns"].includes(status)
-          ? status
-          : golfer.status;
+        golfer.status = isGolferStatus(status) ? status : golfer.status;
       }
     }
   });

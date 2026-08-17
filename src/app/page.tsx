@@ -3,10 +3,9 @@ import { LiveRefresh } from "@/components/LiveRefresh";
 import { StandingsTable } from "@/components/StandingsTable";
 import { isAdmin } from "@/lib/auth";
 import { withLiveScores } from "@/lib/live";
-import { formatRank, formatScore } from "@/lib/format";
+import { formatRank, formatToPar } from "@/lib/format";
 import { picksRevealed, revealLabel } from "@/lib/cutoff";
 import { postedRoundCount, rankEntries } from "@/lib/scoring";
-import { picksCount } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
 
@@ -39,7 +38,6 @@ export default async function HomePage() {
   const standings = rankEntries(pool);
   const leader = standings.find((row) => row.eligible && row.total != null);
   const posted = postedRoundCount(pool.golfers);
-  const needed = picksCount(pool.settings) - pool.settings.voidCount;
   const admin = await isAdmin();
   const revealed = admin || picksRevealed(pool.settings, pool.golfers);
 
@@ -56,7 +54,7 @@ export default async function HomePage() {
           </h1>
           <p className="mt-3 max-w-xl text-muted">
             2 picks from each of 4 groups. Worst {pool.settings.voidCount}{" "}
-            scores voided. Lowest {needed}-score total wins the pool.
+            scores voided. Lowest remaining to par wins the pool.
           </p>
           <div className="mt-3 flex flex-wrap items-center gap-3">
             <LiveRefresh />
@@ -80,7 +78,7 @@ export default async function HomePage() {
                 {leader.entry.name}
               </p>
               <p className="score text-3xl font-semibold">
-                {formatScore(leader.total)}
+                {formatToPar(leader.toPar)}
               </p>
               <p className="mt-1 text-sm text-muted">
                 {formatRank(leader.rank, leader.tied)}
