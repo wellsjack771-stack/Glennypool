@@ -1,8 +1,20 @@
 import Link from "next/link";
 import { PaidMark } from "@/components/PaidMark";
 import { formatRank, formatToPar } from "@/lib/format";
-import type { RankedEntry } from "@/lib/scoring";
+import type { PickRow, RankedEntry } from "@/lib/scoring";
 import { groupLabel } from "@/lib/types";
+
+function squadByScore(picks: PickRow[]) {
+  return [...picks].sort((a, b) => {
+    if (a.toPar == null && b.toPar == null) {
+      return a.label.localeCompare(b.label);
+    }
+    if (a.toPar == null) return 1;
+    if (b.toPar == null) return -1;
+    if (a.toPar !== b.toPar) return a.toPar - b.toPar;
+    return a.label.localeCompare(b.label);
+  });
+}
 
 export function StandingsTable({
   standings,
@@ -85,24 +97,24 @@ export function StandingsTable({
                     {row.countingCount}/6
                   </td>
                   <td className="px-4 py-3">
-                    <div className="flex flex-wrap gap-x-3 gap-y-1 text-sm">
-                      {row.picks.map((pick) => (
-                        <span
+                    <div className="min-w-[180px] space-y-0.5 text-sm">
+                      {squadByScore(row.picks).map((pick) => (
+                        <div
                           key={pick.golferId}
-                          className={
+                          className={`flex items-baseline justify-between gap-3 ${
                             pick.voided
                               ? "text-muted line-through decoration-gold"
                               : pick.counting
                                 ? "text-ink"
                                 : "text-muted"
-                          }
+                          }`}
                           title={groupLabel(pick.group)}
                         >
-                          {pick.label}
-                          <span className="score ml-1 text-xs">
+                          <span>{pick.label}</span>
+                          <span className="score text-xs">
                             {formatToPar(pick.toPar)}
                           </span>
-                        </span>
+                        </div>
                       ))}
                     </div>
                   </td>
