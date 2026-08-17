@@ -1,4 +1,5 @@
-export type GolferStatus = "active" | "wd" | "dq" | "dns";
+export const GOLFER_STATUSES = ["active", "wd", "dq", "dns", "dnf"] as const;
+export type GolferStatus = (typeof GOLFER_STATUSES)[number];
 
 export const ROUND_PAR = 72;
 export const EVENT_PAR = ROUND_PAR * 2;
@@ -92,7 +93,16 @@ export const STATUS_LABEL: Record<GolferStatus, string> = {
   wd: "WD",
   dq: "DQ",
   dns: "DNS",
+  dnf: "DNF",
 };
+
+export function isGolferStatus(value: string): value is GolferStatus {
+  return (GOLFER_STATUSES as readonly string[]).includes(value);
+}
+
+export function looksLikeTeeTime(raw: string) {
+  return teeTimeMinutes(raw) != null;
+}
 
 export function picksCount(settings: Pick<Settings, "groupCount" | "picksPerGroup">) {
   return settings.groupCount * settings.picksPerGroup;

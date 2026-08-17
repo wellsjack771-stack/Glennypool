@@ -1,5 +1,11 @@
 import { roundScore } from "./scoring";
-import { parseGroup, ROUND_PAR, type Golfer, type GroupId } from "./types";
+import {
+  looksLikeTeeTime,
+  parseGroup,
+  ROUND_PAR,
+  type Golfer,
+  type GroupId,
+} from "./types";
 
 export { EVENT_PAR, ROUND_PAR } from "./types";
 
@@ -44,6 +50,24 @@ export const TIEBREAKER_OPTIONS = Array.from({ length: 51 }, (_, i) => i - 20);
 export function formatScore(value: number | null | undefined) {
   if (value == null) return "—";
   return String(value);
+}
+
+export function formatThru(raw: string | null | undefined) {
+  const text = (raw ?? "").replace(/\s+/g, " ").trim();
+  if (!text || looksLikeTeeTime(text)) return "—";
+  const upper = text.toUpperCase();
+  if (upper === "F" || upper === "F*" || upper === "18" || /^F\b/.test(upper)) {
+    return "F";
+  }
+  const hole = upper.match(/^(\d{1,2})\*?$/);
+  if (hole) {
+    const n = Number(hole[1]);
+    if (n >= 1 && n <= 17) return String(n);
+    if (n === 18) return "F";
+  }
+  if (/^(WD|DNF|DNS|DQ)$/.test(upper)) return upper;
+  if (/^(NS|DNP|NO[\s-]?SHOW)$/.test(upper)) return "DNS";
+  return text;
 }
 
 export function formatHandicap(value: number | null | undefined) {

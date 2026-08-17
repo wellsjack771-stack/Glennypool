@@ -1,5 +1,10 @@
 import { readPool, updatePool } from "./db";
-import type { Golfer, GolferStatus, Pool } from "./types";
+import {
+  looksLikeTeeTime,
+  type Golfer,
+  type GolferStatus,
+  type Pool,
+} from "./types";
 
 const UA =
   "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36";
@@ -164,28 +169,37 @@ function parseThru(raw: string) {
   return raw.replace(/\s+/g, " ").trim();
 }
 
-function isTeeTime(thru: string) {
-  return /\d{1,2}:\d{2}\s*(AM|PM)/i.test(thru);
-}
-
 function roundFinished(thru: string) {
   const t = thru.toUpperCase();
   return t === "F" || t === "18" || t === "F*" || t.includes("18");
 }
 
+function markStatus(raw: string | null | undefined): GolferStatus | null {
+  const value = (raw || "").toUpperCase();
+  if (/\bDNF\b/.test(value)) return "dnf";
+  if (/\bWD\b|\bRET\b|WD\/RET/.test(value)) return "wd";
+  if (/\bDQ\b/.test(value)) return "dq";
+  if (/\bDNS\b|\bDNP\b|NO[\s-]?SHOW|\bNS\b/.test(value)) return "dns";
+  return null;
+}
+
 function mapDisposition(
   raw: string | null | undefined,
   thru: string,
-  roundInProgress: boolean,
+  extras: (string | undefined)[] = [],
 ): GolferStatus {
-  const value = (raw || "").toUpperCase();
-  if (value === "WD" || value === "WD/RET" || value === "RET") return "wd";
-  if (value === "DQ") return "dq";
-  if (value === "DNS" || value === "NS" || value === "DNP") {
-    if (roundInProgress && (isTeeTime(thru) || !thru)) return "active";
-    return "dns";
-  }
-  return "active";
+  return (
+    markStatus(raw) ||
+    markStatus(thru) ||
+    extras.map(markStatus).find(Boolean) ||
+    "active"
+  );
+}
+
+function preferredThru(...values: (string | undefined)[]) {
+  const parsed = values.map((value) => parseThru(value ?? "")).filter(Boolean);
+  const holes = parsed.find((value) => !looksLikeTeeTime(value));
+  return holes || parsed[0] || "";
 }
 
 type GGJson = {
@@ -245,7 +259,13 @@ function parseTablePlayers(html: string) {
   const rows = [...html.matchAll(/<tr class='aggregate-row[\s\S]*?<\/tr>/gi)];
   const byName = new Map<
     string,
-    { r1: number | null; r2: number | null; thru: string; toPar: string }
+    {
+      r1: number | null;
+      r2: number | null;
+      thru: string;
+      toPar: string;
+      marks: string;
+    }
   >();
   for (const row of rows) {
     const name =
@@ -255,11 +275,15 @@ function parseTablePlayers(html: string) {
     const cells = [...row[0].matchAll(/<td[\s\S]*?<\/td>/gi)].map((match) =>
       cellText(match[0]),
     );
+    const r1Cell = r1Index >= 0 ? cells[r1Index] ?? "" : "";
+    const r2Cell = r2Index >= 0 ? cells[r2Index] ?? "" : "";
+    const thruCell = thruIndex >= 0 ? parseThru(cells[thruIndex] ?? "") : "";
     byName.set(nameKey(decodeEntities(name)), {
-      r1: r1Index >= 0 ? parseStroke(cells[r1Index]) : null,
-      r2: r2Index >= 0 ? parseStroke(cells[r2Index]) : null,
-      thru: thruIndex >= 0 ? parseThru(cells[thruIndex]) : "",
+      r1: parseStroke(r1Cell),
+      r2: parseStroke(r2Cell),
+      thru: thruCell,
       toPar: toParIndex >= 0 ? cells[toParIndex] ?? "" : "",
+      marks: [r1Cell, r2Cell, thruCell].join(" "),
     });
   }
   return byName;
@@ -291,7 +315,11 @@ export async function fetchLeaderboard(eventId: string): Promise<GGSnapshot> {
     const fromHtml = htmlPlayers.get(nameKey(name));
     const r1Json = agg.rounds?.find((round) => /^R1$/i.test(round.name || ""));
     const r2Json = agg.rounds?.find((round) => /^R2$/i.test(round.name || ""));
-    const thru = parseThru(fromHtml?.thru || r1Json?.thru || r2Json?.thru || "");
+    const thru = preferredThru(
+      r1Json?.thru,
+      r2Json?.thru,
+      fromHtml?.thru,
+    );
     const toPar = fromHtml?.toPar || agg.score || "";
     const r1 =
       fromHtml?.r1 ??
@@ -309,7 +337,14 @@ export async function fetchLeaderboard(eventId: string): Promise<GGSnapshot> {
       r1,
       r2,
       thru,
-      status: mapDisposition(agg.disposition, thru, roundInProgress),
+      status: mapDisposition(agg.disposition, thru, [
+        fromHtml?.marks ?? "",
+        r1Json?.score,
+        r1Json?.total,
+        r2Json?.score,
+        r2Json?.total,
+        agg.score,
+      ]),
       roundInProgress,
     });
   }
@@ -412,8 +447,10 @@ export async function importGolfGeniusField(snapshot: GGSnapshot) {
 }
 
 export function golferLiveLabel(golfer: Golfer) {
-  if (golfer.liveThru) return golfer.liveThru;
+  const thru = golfer.liveThru?.trim() ?? "";
+  if (thru && !looksLikeTeeTime(thru)) return thru;
+  if (golfer.status !== "active") return golfer.status.toUpperCase();
   if (golfer.r1 != null && golfer.r2 != null) return "F";
-  if (golfer.r1 != null) return "R1";
+  if (golfer.r1 != null) return "F";
   return "";
 }

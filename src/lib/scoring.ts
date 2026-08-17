@@ -1,6 +1,7 @@
 import {
   EVENT_PAR,
   GROUPS,
+  looksLikeTeeTime,
   picksCount,
   ROUND_PAR,
   type Entry,
@@ -9,10 +10,6 @@ import {
   type Pool,
   type Settings,
 } from "./types";
-
-function looksLikeTeeTime(thru: string) {
-  return /\d{1,2}:\d{2}\s*(AM|PM)/i.test(thru);
-}
 
 function roundLooksFinished(thru: string) {
   const text = thru.trim().toUpperCase();
@@ -33,6 +30,7 @@ export type PickRow = {
   golfer: Golfer | null;
   golferId: string;
   total: number | null;
+  toPar: number | null;
   posted: boolean;
   voided: boolean;
   counting: boolean;
@@ -44,6 +42,7 @@ export type EntryResult = {
   entry: Entry;
   picks: PickRow[];
   total: number | null;
+  toPar: number | null;
   countingCount: number;
   complete: boolean;
   eligible: boolean;
@@ -96,6 +95,13 @@ export function golferRoundTotal(golfer: Golfer, penalty = 100): number | null {
   return (r1 ?? 0) + (r2 ?? 0);
 }
 
+export function golferToPar(golfer: Golfer, penalty = 100): number | null {
+  const r1 = liveRoundScore(golfer, "r1", penalty);
+  const r2 = liveRoundScore(golfer, "r2", penalty);
+  if (r1 == null && r2 == null) return null;
+  return (r1 != null ? r1 - ROUND_PAR : 0) + (r2 != null ? r2 - ROUND_PAR : 0);
+}
+
 export function championshipTotal(golfer: Golfer, penalty = 100): number | null {
   return golferRoundTotal(golfer, penalty);
 }
@@ -133,10 +139,12 @@ export function scoreEntry(
   const picks: PickRow[] = entry.golferIds.map((golferId) => {
     const golfer = golfersById.get(golferId) ?? null;
     const total = golfer ? golferRoundTotal(golfer, penalty) : null;
+    const toPar = golfer ? golferToPar(golfer, penalty) : null;
     return {
       golfer,
       golferId,
       total,
+      toPar,
       posted: total != null,
       voided: false,
       counting: false,
@@ -175,11 +183,13 @@ export function scoreEntry(
   }
 
   let total = 0;
+  let toPar = 0;
   let countingCount = 0;
   for (const pick of picks) {
     if (pick.voided || !pick.posted || pick.total == null) continue;
     pick.counting = true;
     total += pick.total;
+    toPar += pick.toPar ?? 0;
     countingCount += 1;
   }
 
@@ -195,6 +205,7 @@ export function scoreEntry(
     entry,
     picks,
     total: countingCount > 0 ? total : null,
+    toPar: countingCount > 0 ? toPar : null,
     countingCount,
     complete,
     eligible,

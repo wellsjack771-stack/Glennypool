@@ -2,8 +2,7 @@ import "server-only";
 
 import { mkdir, readFile, rename, writeFile } from "node:fs/promises";
 import path from "node:path";
-import { parseGroup } from "./types";
-import { DEFAULT_SETTINGS, type Entry, type Golfer, type Pool } from "./types";
+import { DEFAULT_SETTINGS, isGolferStatus, parseGroup, type Entry, type Golfer, type Pool } from "./types";
 
 const DATA_DIR = path.resolve(process.env.DATA_DIR || path.join(process.cwd(), "data"));
 const DATA_PATH = path.join(DATA_DIR, "pool.json");
@@ -23,6 +22,7 @@ function emptyPool(): Pool {
 
 function normalizeGolfer(raw: Partial<Golfer> & { flight?: string }): Golfer {
   const fromFlight = raw.group ?? parseGroup(String(raw.flight ?? ""));
+  const status = String(raw.status ?? "");
   return {
     id: raw.id ?? crypto.randomUUID(),
     name: raw.name ?? "",
@@ -30,7 +30,7 @@ function normalizeGolfer(raw: Partial<Golfer> & { flight?: string }): Golfer {
     group: fromFlight,
     r1: raw.r1 ?? null,
     r2: raw.r2 ?? null,
-    status: raw.status ?? "active",
+    status: isGolferStatus(status) ? status : "active",
     ggId: raw.ggId ?? "",
     liveThru: raw.liveThru ?? "",
     liveToPar: raw.liveToPar ?? "",

@@ -1,4 +1,5 @@
 import {
+  looksLikeTeeTime,
   formatClock,
   teeTimeMinutes,
   type Golfer,
@@ -89,10 +90,6 @@ export function revealAt(settings: Pick<Settings, "dates" | "year">) {
   const stamp = `${settings.year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}T07:00:00-03:00`;
   const date = new Date(stamp);
   return Number.isNaN(date.getTime()) ? null : date;
-}
-
-function looksLikeTeeTime(thru: string) {
-  return /\d{1,2}:\d{2}\s*(AM|PM)/i.test(thru);
 }
 
 export function playHasStarted(
