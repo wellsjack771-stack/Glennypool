@@ -1,11 +1,12 @@
 import { LiveRefresh } from "@/components/LiveRefresh";
 import { isAdmin } from "@/lib/auth";
 import { withLiveScores } from "@/lib/live";
-import { formatHandicap, formatScore } from "@/lib/format";
+import { formatHandicap, formatScore, formatThru, formatToPar } from "@/lib/format";
 import { picksRevealed } from "@/lib/cutoff";
 import {
-  championshipTotal,
+  golferToPar,
   golfersByGroup,
+  liveRoundScore,
   pickCounts,
   roundScore,
 } from "@/lib/scoring";
@@ -18,7 +19,7 @@ export default async function FieldPage() {
   const grouped = golfersByGroup(pool.golfers);
   const counts = pickCounts(pool);
   const penalty = pool.settings.penaltyScore;
-  const showPicks = (await isAdmin()) || picksRevealed(pool.settings);
+  const showPicks = (await isAdmin()) || picksRevealed(pool.settings, pool.golfers);
   const sections = [
     ...GROUPS.map((group) => ({
       group,
@@ -94,23 +95,19 @@ export default async function FieldPage() {
                       {formatHandicap(golfer.handicap)}
                     </td>
                     <td className="px-4 py-3 text-sm text-muted">
-                      {golfer.liveThru || "—"}
+                      {formatThru(golfer.liveThru)}
                       {golfer.liveToPar ? (
                         <span className="score ml-2 text-ink">{golfer.liveToPar}</span>
                       ) : null}
                     </td>
                     <td className="score px-4 py-3">
-                      {formatScore(
-                        golfer.status === "active"
-                          ? golfer.r1
-                          : roundScore(golfer, "r1", penalty),
-                      )}
+                      {formatScore(liveRoundScore(golfer, "r1", penalty))}
                     </td>
                     <td className="score px-4 py-3">
                       {formatScore(roundScore(golfer, "r2", penalty))}
                     </td>
                     <td className="score px-4 py-3 font-semibold">
-                      {formatScore(championshipTotal(golfer, penalty))}
+                      {formatToPar(golferToPar(golfer, penalty))}
                     </td>
                     {showPicks ? (
                       <td className="score px-4 py-3 text-muted">
