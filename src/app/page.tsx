@@ -42,51 +42,45 @@ export default async function HomePage() {
   const revealed = admin || picksRevealed(pool.settings, pool.golfers);
 
   return (
-    <div className="space-y-8">
-      <section className="flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between">
+    <div className="space-y-4">
+      <section className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <p className="text-[11px] tracking-[0.22em] text-gold uppercase">
             {pool.settings.dates || `${pool.settings.year} · Two-day event`}
             {pool.settings.venue ? ` · ${pool.settings.venue}` : ""}
           </p>
-          <h1 className="display mt-2 text-4xl leading-none text-pine sm:text-5xl">
+          <h1 className="display mt-1 text-3xl leading-none text-pine sm:text-4xl">
             Live leaderboard
           </h1>
-          <p className="mt-3 max-w-xl text-muted">
-            2 picks from each of 4 groups. Worst {pool.settings.voidCount}{" "}
-            scores voided. Lowest remaining to par wins the pool.
-          </p>
-          <div className="mt-3 flex flex-wrap items-center gap-3">
+          <div className="mt-2 flex flex-wrap items-center gap-3">
             <LiveRefresh />
             {pool.settings.entriesOpen ? (
               <Link
                 href="/enter"
-                className="rounded-sm bg-pine px-4 py-2 text-sm font-semibold text-cream"
+                className="rounded-sm bg-pine px-3 py-1.5 text-sm font-semibold text-cream"
               >
                 Enter your squad
               </Link>
             ) : null}
           </div>
         </div>
-        <div className="panel min-w-[220px] p-5">
-          <p className="text-[11px] tracking-[0.18em] text-gold uppercase">
+        <div className="panel min-w-[200px] px-4 py-3">
+          <p className="text-[10px] tracking-[0.16em] text-gold uppercase">
             {revealed ? "Leader" : "In the book"}
           </p>
           {revealed && leader ? (
-            <>
-              <p className="display mt-1 text-2xl text-pine">
-                {leader.entry.name}
-              </p>
-              <p className="score text-3xl font-semibold">
+            <div className="mt-0.5 flex items-baseline gap-3">
+              <p className="display text-xl text-pine">{leader.entry.name}</p>
+              <p className="score text-xl font-semibold">
                 {formatToPar(leader.toPar)}
               </p>
-              <p className="mt-1 text-sm text-muted">
+              <p className="text-xs text-muted">
                 {formatRank(leader.rank, leader.tied)}
-                {leader.tied ? " · tiebreaker in play" : ""}
+                {leader.tied ? " · TB" : ""}
               </p>
-            </>
+            </div>
           ) : (
-            <p className="mt-2 text-sm text-muted">
+            <p className="mt-1 text-sm text-muted">
               {revealed
                 ? "Waiting on scores."
                 : `${pool.entries.length} squad${pool.entries.length === 1 ? "" : "s"} locked in. Picks stay hidden until ${revealLabel(pool.settings)} AT.`}
@@ -95,9 +89,9 @@ export default async function HomePage() {
         </div>
       </section>
 
-      <div className="grid gap-3 sm:grid-cols-4">
-        <Mini label="Day 1 posted" value={`${posted.r1}/${posted.field || 0}`} />
-        <Mini label="Day 2 posted" value={`${posted.r2}/${posted.field || 0}`} />
+      <div className="panel flex flex-wrap gap-x-6 gap-y-1 px-4 py-2 text-sm">
+        <Mini label="Day 1" value={`${posted.r1}/${posted.field || 0}`} />
+        <Mini label="Day 2" value={`${posted.r2}/${posted.field || 0}`} />
         <Mini label="Entries" value={pool.entries.length} />
         <Mini
           label="Unpaid"
@@ -106,10 +100,12 @@ export default async function HomePage() {
       </div>
 
       <StandingsTable
-        standings={standings}
+        standings={standings.map((row) => ({
+          ...row,
+          entry: { ...row.entry, ownerName: undefined },
+        }))}
         voidCount={pool.settings.voidCount}
         hideSquads={!revealed}
-        showOwner={admin}
       />
     </div>
   );
@@ -117,9 +113,9 @@ export default async function HomePage() {
 
 function Mini({ label, value }: { label: string; value: string | number }) {
   return (
-    <div className="panel px-4 py-3">
-      <p className="text-[11px] tracking-[0.16em] text-muted uppercase">{label}</p>
-      <p className="score mt-1 text-xl text-pine">{value}</p>
-    </div>
+    <p className="text-muted">
+      {label}{" "}
+      <span className="score text-ink">{value}</span>
+    </p>
   );
 }
