@@ -89,9 +89,8 @@ export default async function EntriesAdminPage({
                     <PaidMark paid={entry.paid} />
                     <div>
                       <p className="font-medium">{entry.name}</p>
-                      <p className="text-xs text-muted">
-                        {entry.ownerName ? `${entry.ownerName} · ` : ""}
-                        {entry.golferIds.length}/{needed} picks
+                     <p className="text-xs text-muted">
+ {entry.golferIds.length}/{needed} picks
                         {entry.tiebreakerScore != null
                           ? ` · TB ${formatToPar(entry.tiebreakerScore)}`
                           : " · no TB"}
