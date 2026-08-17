@@ -108,11 +108,7 @@ export default async function EntriesAdminPage({
                     </Link>
                     <EntryAdminControls
                       id={entry.id}
-                      name={
-                        entry.ownerName
-                          ? `${entry.name} (${entry.ownerName})`
-                          : entry.name
-                      }
+                      name={entry.name}
                       paid={entry.paid}
                     />
                   </div>
