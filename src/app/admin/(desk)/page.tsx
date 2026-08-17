@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { PaidMark } from "@/components/PaidMark";
 import { readPool } from "@/lib/db";
+import { formatToPar } from "@/lib/format";
 import { isValidSquad, postedRoundCount, rankEntries } from "@/lib/scoring";
 import { picksCount } from "@/lib/types";
 
@@ -93,7 +94,7 @@ export default async function AdminDeskPage() {
                 ) : null}
               </span>
             </span>
-            <span className="score">{row.total ?? "—"}</span>
+            <span className="score">{formatToPar(row.toPar)}</span>
           </div>
         ))}
         {standings.length === 0 ? (
