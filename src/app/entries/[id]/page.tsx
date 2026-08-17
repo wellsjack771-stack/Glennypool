@@ -44,9 +44,6 @@ export default async function EntryPage({
           {revealed ? row.entry.name : "Hidden entry"}
           {revealed ? <PaidMark paid={row.entry.paid} /> : null}
         </h1>
-        {admin && row.entry.ownerName ? (
-          <p className="mt-1 text-sm text-muted">Entered by {row.entry.ownerName}</p>
-        ) : null}
         <p className="mt-2 text-muted">
           {revealed ? (
             <>
