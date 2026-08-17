@@ -5,7 +5,6 @@ import { useState } from "react";
 export function PayBox({
   fee,
   email,
-  cutoff = "the first tee time Saturday",
   confirm = false,
   locked = false,
 }: {
@@ -68,8 +67,7 @@ export function PayBox({
         >
           {email}
         </a>
-        . You stay unpaid on the leaderboard until Jack confirms it. If you
-        have not paid by {cutoff}, your entry is deleted.
+        . You stay unpaid on the leaderboard until Jack confirms it.
       </p>
       <div className="mt-3 flex flex-wrap gap-2">
         <button
@@ -90,8 +88,7 @@ export function PayBox({
         <label className="mt-4 flex items-start gap-3 text-sm">
           <input type="checkbox" name="willPay" value="1" required className="mt-1" />
           <span>
-            I will send ${fee} e-transfer to {email} now. If I have not paid by{" "}
-            {cutoff}, my entry will be deleted.
+            I will send ${fee} e-transfer to {email} now.
           </span>
         </label>
       ) : null}

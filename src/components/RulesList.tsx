@@ -1,4 +1,3 @@
-import { payCutoffLabel } from "@/lib/cutoff";
 import { picksCount, type Pool } from "@/lib/types";
 
 export function RulesList({
@@ -13,7 +12,6 @@ export function RulesList({
   const penalty = pool.settings.penaltyScore;
   const fee = pool.settings.entryFee;
   const email = pool.settings.etransferEmail;
-  const cutoff = payCutoffLabel(pool.golfers, pool.settings);
 
   const items = [
     {
@@ -54,7 +52,7 @@ export function RulesList({
     {
       n: "08",
       title: `$${fee} e-transfer`,
-      body: `Send $${fee} to ${email}. Unpaid entries are deleted at ${cutoff}.`,
+      body: `Send $${fee} to ${email}. Unpaid entries stay on the board until the admin marks them paid or removes them.`,
     },
   ];
 

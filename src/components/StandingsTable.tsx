@@ -20,16 +20,14 @@ export function StandingsTable({
   standings,
   voidCount,
   hideSquads = false,
-  showOwner = false,
 }: {
   standings: RankedEntry[];
   voidCount: number;
   hideSquads?: boolean;
-  showOwner?: boolean;
 }) {
   if (standings.length === 0) {
     return (
-      <div className="panel px-6 py-12 text-center text-muted">
+      <div className="panel px-4 py-8 text-center text-sm text-muted">
         No pool entries yet. The board will fill once squads are in.
       </div>
     );
@@ -37,19 +35,17 @@ export function StandingsTable({
 
   return (
     <div className="panel overflow-x-auto">
-      <table className="w-full min-w-[760px] text-left">
-        <thead className="bg-pine text-[11px] tracking-[0.16em] text-gold-soft uppercase">
+      <table className="w-full min-w-[640px] text-left text-sm">
+        <thead className="sticky top-0 bg-pine text-[10px] tracking-[0.14em] text-gold-soft uppercase">
           <tr>
-            <th className="px-4 py-3 font-medium">Pos</th>
-            <th className="px-4 py-3 font-medium">Paid</th>
-            <th className="px-4 py-3 font-medium">Entry</th>
+            <th className="px-3 py-2 font-medium">Pos</th>
+            <th className="px-3 py-2 font-medium">Entry</th>
             {hideSquads ? (
-              <th className="px-4 py-3 font-medium">Squad</th>
+              <th className="px-3 py-2 font-medium">Squad</th>
             ) : (
               <>
-                <th className="px-4 py-3 font-medium">Total</th>
-                <th className="px-4 py-3 font-medium">Thru</th>
-                <th className="px-4 py-3 font-medium">Squad</th>
+                <th className="px-3 py-2 font-medium">Total</th>
+                <th className="px-3 py-2 font-medium">Squad</th>
               </>
             )}
           </tr>
@@ -60,48 +56,45 @@ export function StandingsTable({
               key={row.entry.id}
               className={`border-t border-rule ${index === 0 && row.eligible ? "bg-gold-soft/25" : ""}`}
             >
-              <td className="score px-4 py-3 text-lg">
+              <td className="score px-3 py-2 align-top text-base">
                 {row.eligible ? formatRank(row.rank, row.tied) : "—"}
               </td>
-              <td className="px-4 py-3">
-                <PaidMark paid={row.entry.paid} />
-              </td>
-              <td className="px-4 py-3">
-                <Link
-                  href={`/entries/${row.entry.id}`}
-                  className="font-medium hover:text-fairway"
-                >
-                  {row.entry.name}
-                </Link>
-                {showOwner && row.entry.ownerName ? (
-                  <span className="mt-0.5 block text-xs text-muted">
-                    {row.entry.ownerName}
-                  </span>
-                ) : null}
-                {row.tied && row.tiebreakerDiff != null ? (
-                  <span className="mt-0.5 block text-xs text-muted">
-                    TB {row.tiebreakerDiff} off
-                  </span>
-                ) : null}
+              <td className="px-3 py-2 align-top">
+                <div className="flex items-start gap-2">
+                  <PaidMark paid={row.entry.paid} />
+                  <div className="min-w-0">
+                    <Link
+                      href={`/entries/${row.entry.id}`}
+                      className="font-medium hover:text-fairway"
+                    >
+                      {row.entry.name}
+                    </Link>
+                    {row.tied && row.tiebreakerDiff != null ? (
+                      <span className="block text-[11px] leading-tight text-muted">
+                        TB {row.tiebreakerDiff} off
+                      </span>
+                    ) : null}
+                  </div>
+                </div>
               </td>
               {hideSquads ? (
-                <td className="px-4 py-3 text-sm text-muted">
+                <td className="px-3 py-2 text-xs text-muted">
                   Squad sealed until Saturday 7:00 AM
                 </td>
               ) : (
                 <>
-                  <td className="score px-4 py-3 text-lg font-semibold">
-                    {formatToPar(row.toPar)}
+                  <td className="score px-3 py-2 align-top text-base font-semibold">
+                    <span>{formatToPar(row.toPar)}</span>
+                    <span className="mt-0.5 block text-[11px] font-normal text-muted">
+                      {row.countingCount}/6
+                    </span>
                   </td>
-                  <td className="score px-4 py-3 text-muted">
-                    {row.countingCount}/6
-                  </td>
-                  <td className="px-4 py-3">
-                    <div className="min-w-[180px] space-y-0.5 text-sm">
+                  <td className="px-3 py-1.5 align-top">
+                    <div className="min-w-[160px]">
                       {squadByScore(row.picks).map((pick) => (
                         <div
                           key={pick.golferId}
-                          className={`flex items-baseline justify-between gap-3 ${
+                          className={`flex items-baseline justify-between gap-3 py-px text-xs leading-5 ${
                             pick.voided
                               ? "text-muted line-through decoration-gold"
                               : pick.counting
@@ -110,8 +103,8 @@ export function StandingsTable({
                           }`}
                           title={groupLabel(pick.group)}
                         >
-                          <span>{pick.label}</span>
-                          <span className="score text-xs">
+                          <span className="truncate">{pick.label}</span>
+                          <span className="score shrink-0">
                             {formatToPar(pick.toPar)}
                           </span>
                         </div>
@@ -124,10 +117,10 @@ export function StandingsTable({
           ))}
         </tbody>
       </table>
-      <p className="border-t border-rule px-4 py-3 text-xs text-muted">
+      <p className="border-t border-rule px-3 py-2 text-[11px] leading-5 text-muted">
         {hideSquads
-          ? "Entry names and paid status are public. Squads stay hidden until Saturday 7:00 AM. Unpaid entries are deleted at the first tee."
-          : `Struck names are the ${voidCount} voided scores. Lowest remaining to par wins. Ties go to the closest predicted championship score to par. A check mark means the $15 e-transfer is confirmed. Unpaid entries are deleted at the first tee time Saturday.`}
+          ? "Entry names and paid status are public. Squads stay hidden until Saturday 7:00 AM."
+          : `Struck names are the ${voidCount} voided scores. Lowest remaining to par wins. Ties go to the closest predicted championship score to par. Check mark = paid.`}
       </p>
     </div>
   );
