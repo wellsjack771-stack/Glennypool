@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { PaidMark } from "@/components/PaidMark";
-import { formatRank, formatScore } from "@/lib/format";
+import { formatRank, formatToPar } from "@/lib/format";
 import type { RankedEntry } from "@/lib/scoring";
 import { groupLabel } from "@/lib/types";
 
@@ -79,7 +79,7 @@ export function StandingsTable({
               ) : (
                 <>
                   <td className="score px-4 py-3 text-lg font-semibold">
-                    {formatScore(row.total)}
+                    {formatToPar(row.toPar)}
                   </td>
                   <td className="score px-4 py-3 text-muted">
                     {row.countingCount}/6
@@ -100,7 +100,7 @@ export function StandingsTable({
                         >
                           {pick.label}
                           <span className="score ml-1 text-xs">
-                            {formatScore(pick.total)}
+                            {formatToPar(pick.toPar)}
                           </span>
                         </span>
                       ))}
@@ -115,7 +115,7 @@ export function StandingsTable({
       <p className="border-t border-rule px-4 py-3 text-xs text-muted">
         {hideSquads
           ? "Entry names and paid status are public. Squads stay hidden until Saturday 7:00 AM. Unpaid entries are deleted at the first tee."
-          : `Struck names are the ${voidCount} voided scores. Lowest remaining total wins. Ties go to the closest predicted championship score to par. A check mark means the $15 e-transfer is confirmed. Unpaid entries are deleted at the first tee time Saturday.`}
+          : `Struck names are the ${voidCount} voided scores. Lowest remaining to par wins. Ties go to the closest predicted championship score to par. A check mark means the $15 e-transfer is confirmed. Unpaid entries are deleted at the first tee time Saturday.`}
       </p>
     </div>
   );

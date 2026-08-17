@@ -1,6 +1,6 @@
 import { saveAllScores } from "@/app/actions";
-import { championshipTotal, golfersByGroup } from "@/lib/scoring";
-import { formatScore } from "@/lib/format";
+import { golferToPar, golfersByGroup } from "@/lib/scoring";
+import { formatToPar } from "@/lib/format";
 import { GROUPS, groupLabel, type Golfer } from "@/lib/types";
 import { SubmitButton } from "./SubmitButton";
 
@@ -87,7 +87,7 @@ export function ScoreSheet({ golfers }: { golfers: Golfer[] }) {
                     />
                   </td>
                   <td className="score px-3 py-2">
-                    {formatScore(championshipTotal(golfer))}
+                    {formatToPar(golferToPar(golfer))}
                   </td>
                   <td className="px-3 py-2">
                     <select
@@ -97,7 +97,8 @@ export function ScoreSheet({ golfers }: { golfers: Golfer[] }) {
                     >
                       <option value="active">Active</option>
                       <option value="wd">WD</option>
-                      <option value="dns">No show</option>
+                      <option value="dnf">DNF</option>
+                      <option value="dns">DNS / NS</option>
                       <option value="dq">DQ</option>
                     </select>
                   </td>
@@ -108,8 +109,8 @@ export function ScoreSheet({ golfers }: { golfers: Golfer[] }) {
         </table>
       </div>
       <p className="text-sm text-muted">
-        WD or no-show gets 100 for any day without a posted score. Save after
-        assigning groups or posting scores.
+        WD, DNF, DNS, or no-show gets 100 for any day without a posted score.
+        Save after assigning groups or posting scores.
       </p>
       <SubmitButton pendingLabel="Posting…">Save field & scores</SubmitButton>
     </form>

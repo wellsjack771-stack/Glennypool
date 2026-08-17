@@ -2,7 +2,7 @@
 
 import { useActionState, useMemo, useState } from "react";
 import { saveEntry } from "@/app/actions";
-import { formatHandicap, formatToPar, TIEBREAKER_OPTIONS } from "@/lib/format";
+import { formatHandicap, formatThru, formatToPar, TIEBREAKER_OPTIONS } from "@/lib/format";
 import { groupCounts } from "@/lib/scoring";
 import {
   GROUPS,
@@ -224,9 +224,9 @@ export function EntryPicker({
                     >
                       <span className="min-w-0">
                         <span className="font-medium">{golfer.name}</span>
-                        {golfer.liveThru ? (
+                        {formatThru(golfer.liveThru) !== "—" ? (
                           <span className="ml-2 text-xs text-muted">
-                            {golfer.liveThru}
+                            {formatThru(golfer.liveThru)}
                           </span>
                         ) : null}
                       </span>

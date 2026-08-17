@@ -39,7 +39,7 @@ export function RulesList({
     {
       n: "05",
       title: "Withdrawals and no-shows",
-      body: `WD or no-show is a ${penalty} for that day. Finish day 1 then withdraw: keep day 1, take ${penalty} on day 2.`,
+      body: `WD, DNF, DNS, NS, or no-show is a ${penalty} for that day. Finish day 1 then withdraw: keep day 1, take ${penalty} on day 2.`,
     },
     {
       n: "06",
@@ -49,7 +49,7 @@ export function RulesList({
     {
       n: "07",
       title: "Picks stay private",
-      body: "Nobody sees another player’s squad until Saturday 7:00 AM. Then the live leaderboard opens.",
+      body: "Squads stay hidden until the first tee Saturday. Once play starts, the live pool board opens and new entries are closed.",
     },
     {
       n: "08",
