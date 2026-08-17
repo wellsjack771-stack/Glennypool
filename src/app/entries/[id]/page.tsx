@@ -52,7 +52,7 @@ export default async function EntryPage({
             <>
               {row.eligible ? formatRank(row.rank, row.tied) : "Unranked"} ·
               total{" "}
-              <span className="score text-ink">{formatScore(row.total)}</span>
+              <span className="score text-ink">{formatToPar(row.toPar)}</span>
               {row.entry.tiebreakerScore != null ? (
                 <>
                   {" "}
@@ -123,7 +123,7 @@ export default async function EntryPage({
                   )}
                 </td>
                 <td className="score px-4 py-3 font-semibold">
-                  {formatScore(pick.total)}
+                  {formatToPar(pick.toPar)}
                 </td>
                 <td className="px-4 py-3 text-xs tracking-[0.14em] uppercase">
                   {pick.voided ? "Void" : pick.counting ? "Counts" : "—"}
