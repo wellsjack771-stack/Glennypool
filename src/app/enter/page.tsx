@@ -23,7 +23,7 @@ export default async function EnterPage() {
     return (
       <Closed
         title="Entries are closed"
-        body="The books are locked. Watch the live leaderboard once play starts."
+        body="The books are locked. Watch the leaderboard, or check back if entries open again."
         href="/"
         link="Leaderboard"
       />
@@ -51,8 +51,6 @@ export default async function EnterPage() {
         <p className="mt-3 max-w-xl text-muted">
           Read the rules, pick 2 from each group, then send $
           {pool.settings.entryFee} e-transfer to {pool.settings.etransferEmail}.
-          Unpaid entries are deleted at{" "}
-          {payCutoffLabel(pool.golfers, pool.settings)}.
         </p>
         <a
           href="#picks"
