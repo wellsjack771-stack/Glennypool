@@ -109,22 +109,10 @@ export function playHasStarted(
   });
 }
 
-export function picksRevealed(
-  settings: Pick<Settings, "dates" | "year">,
-  golfers: Pick<Golfer, "r1" | "r2" | "liveThru" | "liveToPar">[] = [],
-) {
-  return playHasStarted(settings, golfers);
+export function picksRevealed(settings: Pick<Settings, "picksPublic">) {
+  return Boolean(settings.picksPublic);
 }
 
-export function revealLabel(settings: Pick<Settings, "dates" | "year">) {
-  const at = revealAt(settings);
-  if (!at) return "Saturday at 7:00 AM";
-  return at.toLocaleString("en-CA", {
-    timeZone: "America/Halifax",
-    weekday: "long",
-    month: "short",
-    day: "numeric",
-    hour: "numeric",
-    minute: "2-digit",
-  });
+export function revealLabel(_settings?: Pick<Settings, "dates" | "year">) {
+  return "the admin publishes them";
 }

@@ -4,7 +4,7 @@ export type GolferStatus = (typeof GOLFER_STATUSES)[number];
 export const ROUND_PAR = 72;
 export const EVENT_PAR = ROUND_PAR * 2;
 
-export const GROUPS = [1, 2, 3, 4] as const;
+export const GROUPS = [1, 2, 3, 4, 5, 6] as const;
 export type GroupId = (typeof GROUPS)[number];
 
 export type Settings = {
@@ -28,6 +28,7 @@ export type Settings = {
   ggLastSyncCount: number;
   setupComplete: boolean;
   entriesOpen: boolean;
+  picksPublic: boolean;
   entryFee: number;
   etransferEmail: string;
   pinHash: string;
@@ -84,6 +85,7 @@ export const DEFAULT_SETTINGS: Omit<Settings, "pinHash" | "pinSalt"> = {
   ggLastSyncCount: 0,
   setupComplete: false,
   entriesOpen: true,
+  picksPublic: false,
   entryFee: 15,
   etransferEmail: "wellsjack771@gmail.com",
 };
@@ -110,7 +112,13 @@ export function picksCount(settings: Pick<Settings, "groupCount" | "picksPerGrou
 
 export function groupLabel(group: GroupId | null | undefined) {
   if (!group) return "Ungrouped";
-  return `Group ${"ABCD"[group - 1] ?? group}`;
+  return `Group ${"ABCDEF"[group - 1] ?? group}`;
+}
+
+export function groupRangeLabel(count: number) {
+  const letters = "ABCDEF".slice(0, Math.max(1, count));
+  if (letters.length === 1) return letters;
+  return `${letters[0]}–${letters[letters.length - 1]}`;
 }
 
 export function teeTimeMinutes(raw: string) {
@@ -175,5 +183,7 @@ export function parseGroup(raw: string): GroupId | null {
   if (text === "B" || text === "2") return 2;
   if (text === "C" || text === "3") return 3;
   if (text === "D" || text === "4") return 4;
+  if (text === "E" || text === "5") return 5;
+  if (text === "F" || text === "6") return 6;
   return null;
 }
