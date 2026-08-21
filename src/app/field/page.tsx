@@ -19,9 +19,13 @@ export default async function FieldPage() {
   const grouped = golfersByGroup(pool.golfers);
   const counts = pickCounts(pool);
   const penalty = pool.settings.penaltyScore;
-  const showPicks = (await isAdmin()) || picksRevealed(pool.settings, pool.golfers);
+  const showPicks = (await isAdmin()) || picksRevealed(pool.settings);
   const sections = [
-    ...GROUPS.map((group) => ({
+    ...GROUPS.filter(
+      (group) =>
+        group <= pool.settings.groupCount ||
+        (grouped.get(group)?.length ?? 0) > 0,
+    ).map((group) => ({
       group,
       label: groupLabel(group),
       rows: grouped.get(group) ?? [],
@@ -45,8 +49,8 @@ export default async function FieldPage() {
         <p className="mt-2 text-muted">
           {pool.golfers.length} golfers
           {pool.settings.ggEventName
-            ? ` · live from ${pool.settings.ggEventName} · groups by tee time`
-            : " · pick 2 from each group"}
+            ? ` · live from ${pool.settings.ggEventName}`
+            : ` · pick ${pool.settings.picksPerGroup} from each of ${pool.settings.groupCount} groups`}
         </p>
         <div className="mt-2">
           <LiveRefresh />
