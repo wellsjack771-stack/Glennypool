@@ -19,10 +19,9 @@ export default async function LiveSyncPage() {
         </p>
         <h1 className="display mt-2 text-4xl text-pine">Golf Genius</h1>
         <p className="mt-2 max-w-2xl text-muted">
-          Paste a public Golf Genius results page. We read the Overall Men&apos;s
-          Club Championship board and pull names and scores every few minutes.
-          This weekend we can test against another club&apos;s page — yours will
-          wire the same way.
+          Paste a public Golf Genius results page when you have it. Until you
+          connect one, nothing is pulled. Disconnecting clears live scores
+          without deleting golfers.
         </p>
       </div>
 
