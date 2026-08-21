@@ -4,10 +4,18 @@ import { formatToPar } from "@/lib/format";
 import { GROUPS, groupLabel, type Golfer } from "@/lib/types";
 import { SubmitButton } from "./SubmitButton";
 
-export function ScoreSheet({ golfers }: { golfers: Golfer[] }) {
+export function ScoreSheet({
+  golfers,
+  groupCount = 4,
+}: {
+  golfers: Golfer[];
+  groupCount?: number;
+}) {
   const grouped = golfersByGroup(golfers);
   const sections: { label: string; rows: Golfer[] }[] = [
-    ...GROUPS.map((group) => ({
+    ...GROUPS.filter(
+      (group) => group <= groupCount || (grouped.get(group)?.length ?? 0) > 0,
+    ).map((group) => ({
       label: groupLabel(group),
       rows: grouped.get(group) ?? [],
     })),
@@ -60,10 +68,14 @@ export function ScoreSheet({ golfers }: { golfers: Golfer[] }) {
                       className="rounded-sm border border-rule bg-paper px-2 py-1"
                     >
                       <option value="">—</option>
-                      <option value="1">A</option>
-                      <option value="2">B</option>
-                      <option value="3">C</option>
-                      <option value="4">D</option>
+                      {GROUPS.filter(
+                        (group) =>
+                          group <= groupCount || group === golfer.group,
+                      ).map((group) => (
+                        <option key={group} value={group}>
+                          {groupLabel(group).replace("Group ", "")}
+                        </option>
+                      ))}
                     </select>
                   </td>
                   <td className="px-3 py-2">

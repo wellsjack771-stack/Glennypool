@@ -7,6 +7,7 @@ import { groupCounts } from "@/lib/scoring";
 import {
   GROUPS,
   groupLabel,
+  groupRangeLabel,
   picksCount,
   teeWindow,
   type Entry,
@@ -142,12 +143,18 @@ export function EntryPicker({
       </label>
       {!ready ? (
         <p className="text-sm text-danger">
-          Assign every golfer to Group A–D before taking entries. Each squad
-          needs 2 from each group.
+          Assign every golfer to Group {groupRangeLabel(settings.groupCount)}{" "}
+          before taking entries. Each squad needs {settings.picksPerGroup} from
+          each group.
         </p>
       ) : null}
 
-      <div className="grid gap-2 sm:grid-cols-4">
+      <div
+        className="grid gap-2"
+        style={{
+          gridTemplateColumns: `repeat(${Math.min(settings.groupCount, 4)}, minmax(0, 1fr))`,
+        }}
+      >
         {grouped.map(({ group }) => {
           const picks = selected
             .map((id) => byId.get(id))

@@ -79,14 +79,14 @@ export function StandingsTable({
               </td>
               {hideSquads ? (
                 <td className="px-3 py-2 text-xs text-muted">
-                  Squad sealed until Saturday 7:00 AM
+                  Squad sealed until the admin publishes them
                 </td>
               ) : (
                 <>
                   <td className="score px-3 py-2 align-top text-base font-semibold">
                     <span>{formatToPar(row.toPar)}</span>
                     <span className="mt-0.5 block text-[11px] font-normal text-muted">
-                      {row.countingCount}/6
+                      {row.countingCount}/{row.picks.length - voidCount}
                     </span>
                   </td>
                   <td className="px-3 py-1.5 align-top">
@@ -119,7 +119,7 @@ export function StandingsTable({
       </table>
       <p className="border-t border-rule px-3 py-2 text-[11px] leading-5 text-muted">
         {hideSquads
-          ? "Entry names and paid status are public. Squads stay hidden until Saturday 7:00 AM."
+          ? "Entry names and paid status are public. Squads stay hidden until the admin publishes them."
           : `Struck names are the ${voidCount} voided scores. Lowest remaining to par wins. Ties go to the closest predicted championship score to par. Check mark = paid.`}
       </p>
     </div>

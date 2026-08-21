@@ -16,13 +16,13 @@ export function RulesList({
   const items = [
     {
       n: "01",
-      title: "Four groups",
-      body: "Golfers are split into four groups. You pick from those groups.",
+      title: `${pool.settings.groupCount} groups`,
+      body: `Golfers are split into ${pool.settings.groupCount} groups. You pick from those groups.`,
     },
     {
       n: "02",
-      title: "2 from each group",
-      body: `Select exactly 2 golfers from each group — ${totalPicks} in all. More than one entry may pick the same golfer.`,
+      title: `${pool.settings.picksPerGroup} from each group`,
+      body: `Select exactly ${pool.settings.picksPerGroup} golfers from each group — ${totalPicks} in all. More than one entry may pick the same golfer.`,
     },
     {
       n: "03",
@@ -47,7 +47,7 @@ export function RulesList({
     {
       n: "07",
       title: "Picks stay private",
-      body: "Squads stay hidden until the first tee Saturday. Once play starts, the live pool board opens and new entries are closed.",
+      body: "Squads stay hidden until the admin publishes them. Public entries stay open until the admin turns them off.",
     },
     {
       n: "08",
