@@ -3,7 +3,7 @@ import { ScoreSheet } from "@/components/ScoreSheet";
 import { SubmitButton } from "@/components/SubmitButton";
 import { readPool } from "@/lib/db";
 import { formatHandicap } from "@/lib/format";
-import { groupLabel } from "@/lib/types";
+import { groupLabel, groupRangeLabel } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
 
@@ -19,17 +19,17 @@ export default async function GolfersAdminPage() {
         </p>
         <h1 className="display mt-2 text-4xl text-pine">Golfers & scores</h1>
         <p className="mt-2 text-muted">
-          Paste the roster, assign four handicap groups, then post day 1 and
-          day 2 as they come in. The public board updates live.
+          Paste the roster, assign {groupRangeLabel(pool.settings.groupCount)}{" "}
+          groups, then post day 1 and day 2 as they come in. The public board
+          updates live.
         </p>
       </div>
 
       <section className="panel p-6">
         <h2 className="display text-2xl text-pine">Paste handicaps</h2>
         <p className="mt-1 mb-4 text-sm text-muted">
-          Ashburn&apos;s Players page is sign-in only, so we can&apos;t pull HI
-          automatically. Copy the list from Golf Genius Pairings → Players and
-          paste it here. One player per line:{" "}
+          If Golf Genius Players is sign-in only, copy the list from Pairings →
+          Players and paste it here. One player per line:{" "}
           <span className="italic">Jamie Sweet, 1.2</span> or{" "}
           <span className="italic">Jamie Sweet 1.2</span>
         </p>
@@ -64,14 +64,18 @@ export default async function GolfersAdminPage() {
       {ungrouped > 0 ? (
         <p className="text-sm text-danger">
           {ungrouped} golfer{ungrouped === 1 ? " is" : "s are"} still ungrouped.
-          Assign A–D before taking pool entries.
+          Assign {groupRangeLabel(pool.settings.groupCount)} before taking pool
+          entries.
         </p>
       ) : null}
 
       {pool.golfers.length > 0 ? (
         <section className="space-y-4">
           <h2 className="display text-2xl text-pine">Groups & scorecard</h2>
-          <ScoreSheet golfers={pool.golfers} />
+          <ScoreSheet
+            golfers={pool.golfers}
+            groupCount={pool.settings.groupCount}
+          />
         </section>
       ) : null}
 
