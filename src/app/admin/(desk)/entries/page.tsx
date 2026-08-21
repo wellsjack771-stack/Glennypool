@@ -31,7 +31,8 @@ export default async function EntriesAdminPage({
         </h1>
         <p className="mt-2 mb-6 text-muted">
           Real name is private (you only). Entry name is public and can be
-          anything. 2 golfers from each group, plus the champion&apos;s
+          anything. {pool.settings.picksPerGroup} golfers from each of{" "}
+          {pool.settings.groupCount} groups, plus the champion&apos;s
           36-hole score to par as the tiebreaker (Even, −1, +2).
           {pool.settings.entriesOpen ? (
             <>
@@ -89,8 +90,9 @@ export default async function EntriesAdminPage({
                     <PaidMark paid={entry.paid} />
                     <div>
                       <p className="font-medium">{entry.name}</p>
-                     <p className="text-xs text-muted">
- {entry.golferIds.length}/{needed} picks
+                      <p className="text-xs text-muted">
+                        {entry.ownerName ? `${entry.ownerName} · ` : ""}
+                        {entry.golferIds.length}/{needed} picks
                         {entry.tiebreakerScore != null
                           ? ` · TB ${formatToPar(entry.tiebreakerScore)}`
                           : " · no TB"}
