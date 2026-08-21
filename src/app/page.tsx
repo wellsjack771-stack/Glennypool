@@ -39,7 +39,7 @@ export default async function HomePage() {
   const leader = standings.find((row) => row.eligible && row.total != null);
   const posted = postedRoundCount(pool.golfers);
   const admin = await isAdmin();
-  const revealed = admin || picksRevealed(pool.settings, pool.golfers);
+  const revealed = admin || picksRevealed(pool.settings);
 
   return (
     <div className="space-y-4">
@@ -83,7 +83,7 @@ export default async function HomePage() {
             <p className="mt-1 text-sm text-muted">
               {revealed
                 ? "Waiting on scores."
-                : `${pool.entries.length} squad${pool.entries.length === 1 ? "" : "s"} locked in. Picks stay hidden until ${revealLabel(pool.settings)} AT.`}
+                : `${pool.entries.length} squad${pool.entries.length === 1 ? "" : "s"} locked in. Picks stay hidden until ${revealLabel()}.`}
             </p>
           )}
         </div>
