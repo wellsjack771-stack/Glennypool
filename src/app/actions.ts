@@ -20,9 +20,8 @@ import {
 } from "@/lib/format";
 import { nameKey } from "@/lib/golfgenius";
 import { rememberEntry } from "@/lib/mine";
-import { playHasStarted } from "@/lib/cutoff";
 import { isValidSquad } from "@/lib/scoring";
-import { isGolferStatus, type GolferStatus } from "@/lib/types";
+import { isGolferStatus, picksCount, type GolferStatus } from "@/lib/types";
 
 function refresh() {
   revalidatePath("/", "layout");
@@ -117,6 +116,11 @@ export async function saveSettings(
   }
 
   const entriesOpen = formData.get("entriesOpen") === "1";
+  const picksPublic = formData.get("picksPublic") === "1";
+  const groupCount = Math.min(
+    6,
+    Math.max(2, Math.round(Number(formData.get("groupCount")) || 4)),
+  );
   const entryFee = Math.max(0, Number(formData.get("entryFee")) || 15);
   const etransferEmail =
     String(formData.get("etransferEmail") ?? "").trim() ||
@@ -130,6 +134,8 @@ export async function saveSettings(
     pool.settings.dates = dates;
     pool.settings.championId = championId;
     pool.settings.entriesOpen = entriesOpen;
+    pool.settings.picksPublic = picksPublic;
+    pool.settings.groupCount = groupCount;
     pool.settings.entryFee = entryFee;
     pool.settings.etransferEmail = etransferEmail;
     if (newPin) {
@@ -255,13 +261,6 @@ export async function saveEntry(
   }
 
   const pool = await readPool();
-  if (
-    publicSubmit &&
-    ( !pool.settings.entriesOpen ||
-      playHasStarted(pool.settings, pool.golfers))
-  ) {
-    return { error: "Entries are closed. The tournament has started." };
-  }
   if ((!admin || publicSubmit) && !pool.settings.entriesOpen) {
     return { error: "Entries are closed." };
   }
@@ -272,8 +271,9 @@ export async function saveEntry(
   const golfersById = new Map(pool.golfers.map((golfer) => [golfer.id, golfer]));
   const picks = uniqueIds.filter((golferId) => golfersById.has(golferId));
   if (!isValidSquad(picks, golfersById, pool.settings)) {
+    const needed = picksCount(pool.settings);
     return {
-      error: "Pick 2 golfers from each of the 4 groups.",
+      error: `Pick ${pool.settings.picksPerGroup} golfers from each of the ${pool.settings.groupCount} groups (${needed} total).`,
     };
   }
 
@@ -393,5 +393,26 @@ export async function pullGolfGeniusNow() {
   await requireAdmin();
   const { syncGolfGeniusScores } = await import("@/lib/golfgenius");
   await syncGolfGeniusScores(true);
+  refresh();
+}
+
+export async function disconnectGolfGenius() {
+  await requireAdmin();
+  await updatePool((pool) => {
+    pool.settings.ggPageUrl = "";
+    pool.settings.ggLeagueId = "";
+    pool.settings.ggEventId = "";
+    pool.settings.ggEventName = "";
+    pool.settings.ggLastSyncAt = "";
+    pool.settings.ggLastSyncStatus = "";
+    pool.settings.ggLastSyncCount = 0;
+    for (const golfer of pool.golfers) {
+      golfer.ggId = "";
+      golfer.r1 = null;
+      golfer.r2 = null;
+      golfer.liveThru = "";
+      golfer.liveToPar = "";
+    }
+  });
   refresh();
 }
