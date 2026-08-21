@@ -29,7 +29,7 @@ export default async function EntryPage({
   const penalty = pool.settings.penaltyScore;
   const admin = await isAdmin();
   const mine = await ownsEntry(id);
-  const revealed = admin || mine || picksRevealed(pool.settings, pool.golfers);
+  const revealed = admin || mine || picksRevealed(pool.settings);
 
   return (
     <div className="space-y-8">
@@ -62,7 +62,7 @@ export default async function EntryPage({
             </>
           ) : (
             <>
-              Squads stay private until {revealLabel(pool.settings)} AT.
+              Squads stay private until {revealLabel()}.
             </>
           )}
         </p>
@@ -80,7 +80,7 @@ export default async function EntryPage({
       ) : null}
       {!revealed ? (
         <div className="panel px-6 py-10 text-center text-muted">
-          This squad is sealed until Saturday 7:00 AM.
+          This squad is sealed until the admin publishes them.
         </div>
       ) : (
       <div className="panel overflow-hidden">
