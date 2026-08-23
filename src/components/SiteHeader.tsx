@@ -14,7 +14,7 @@ export function SiteHeader({
 }) {
   const title = settings.clubName || "Club Championship Pool";
   const links = [
-    { href: "/", label: "Leaderboard" },
+    { href: "/standings", label: "Leaderboard" },
     { href: "/field", label: "Field" },
     ...(settings.setupComplete && settings.entriesOpen
       ? [{ href: "/enter", label: "Enter" }]

@@ -122,6 +122,22 @@ export function SettingsForm({
           winner takes the tie.
         </span>
       </label>
+      <label className="block">
+        <span className="mb-1.5 block text-[11px] font-semibold tracking-[0.16em] text-fairway uppercase">
+          Congratulations message
+        </span>
+        <textarea
+          name="winnerMessage"
+          rows={5}
+          defaultValue={settings.winnerMessage ?? ""}
+          placeholder="Write anything you want the winner — and everyone else — to see on the homepage."
+          className="w-full rounded-sm border border-rule bg-paper px-3 py-2.5 outline-none focus:border-gold"
+        />
+        <span className="mt-1.5 block text-sm text-muted">
+          Shows on the public congratulations page. Leave blank to show nothing
+          extra.
+        </span>
+      </label>
       <div className="grid gap-4 sm:grid-cols-2">
         <Field
           label="New PIN (optional)"
