@@ -34,7 +34,7 @@ export default async function EntryPage({
   return (
     <div className="space-y-8">
       <div>
-        <Link href="/" className="text-sm text-fairway">
+        <Link href="/standings" className="text-sm text-fairway">
           ← Leaderboard
         </Link>
         <p className="mt-4 text-[11px] tracking-[0.22em] text-gold uppercase">
