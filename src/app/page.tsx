@@ -1,123 +1,134 @@
 import Link from "next/link";
-import { PaidMark } from "@/components/PaidMark";
-import { readPool } from "@/lib/db";
 import { formatToPar } from "@/lib/format";
-import { isValidSquad, postedRoundCount, rankEntries } from "@/lib/scoring";
-import { picksCount } from "@/lib/types";
+import { withLiveScores } from "@/lib/live";
+import { rankEntries } from "@/lib/scoring";
+import { groupLabel } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
 
-export default async function AdminDeskPage() {
-  const pool = await readPool();
-  const standings = rankEntries(pool);
-  const posted = postedRoundCount(pool.golfers);
-  const golfersById = new Map(pool.golfers.map((golfer) => [golfer.id, golfer]));
-  const incomplete = pool.entries.filter(
-    (entry) => !isValidSquad(entry.golferIds, golfersById, pool.settings),
-  ).length;
-  const ungrouped = pool.golfers.filter((golfer) => golfer.group == null).length;
-  const needed = picksCount(pool.settings);
-  const unpaid = pool.entries.filter((entry) => !entry.paid).length;
-
-  return (
-    <div className="space-y-8">
-      <div>
+export default async function HomePage() {
+  const pool = await withLiveScores();
+  if (!pool.settings.setupComplete) {
+    return (
+      <section className="mx-auto max-w-2xl">
         <p className="text-[11px] tracking-[0.22em] text-gold uppercase">
-          Committee desk
+          New pool
         </p>
-        <h1 className="display mt-2 text-4xl text-pine">
-          {pool.settings.clubName}
+        <h1 className="display mt-2 text-5xl text-pine">
+          Open the championship books.
         </h1>
-      </div>
-      <div className="grid gap-4 sm:grid-cols-4">
-        <Stat label="Golfers" value={pool.golfers.length} href="/admin/golfers" />
-        <Stat
-          label="Day 1 / Day 2"
-          value={`${posted.r1}/${posted.r2}`}
-          href="/admin/golfers"
-        />
-        <Stat label="Entries" value={pool.entries.length} href="/admin/entries" />
-        <Stat label="Unpaid" value={unpaid} href="/admin/entries" />
-      </div>
-      {ungrouped > 0 ? (
-        <p className="text-sm text-danger">
-          {ungrouped} golfer{ungrouped === 1 ? "" : "s"} still need a group
-          before entries can be completed.
+        <p className="mt-4 max-w-lg text-lg leading-8 text-muted">
+          Set your club name, lock an admin PIN, then build the handicap groups
+          and everyone&apos;s squads.
         </p>
-      ) : null}
-      {incomplete > 0 ? (
-        <p className="text-sm text-danger">
-          {incomplete} {incomplete === 1 ? "entry still needs" : "entries still need"}{" "}
-          a full {needed}-golfer squad (2 from each group).
-        </p>
-      ) : null}
-      <div className="flex flex-wrap gap-3">
         <Link
-          href="/admin/golfers"
-          className="rounded-sm bg-pine px-4 py-2.5 text-sm font-semibold text-cream"
+          href="/setup"
+          className="mt-8 inline-flex rounded-sm bg-pine px-5 py-3 text-sm font-semibold tracking-wide text-cream"
         >
-          Post scores
+          Set up the pool
         </Link>
-        <Link
-          href="/admin/entries"
-          className="rounded-sm border border-rule px-4 py-2.5 text-sm text-fairway"
-        >
-          Add an entry
-        </Link>
-        {pool.settings.entriesOpen ? (
-          <Link
-            href="/enter"
-            className="rounded-sm px-4 py-2.5 text-sm text-muted"
-          >
-            Public enter page
-          </Link>
-        ) : null}
-        <Link
-          href="/admin/live"
-          className="rounded-sm px-4 py-2.5 text-sm text-muted"
-        >
-          Golf Genius
-        </Link>
-      </div>
-      <div className="panel divide-y divide-rule">
-        {standings.slice(0, 10).map((row) => (
-          <div
-            key={row.entry.id}
-            className="flex items-center justify-between px-5 py-3"
-          >
-            <span className="flex items-center gap-2">
-              <PaidMark paid={row.entry.paid} />
-              <span>
-                <span className="block">{row.entry.name}</span>
-                {row.entry.ownerName ? (
-                  <span className="text-xs text-muted">{row.entry.ownerName}</span>
-                ) : null}
-              </span>
-            </span>
-            <span className="score">{formatToPar(row.toPar)}</span>
-          </div>
-        ))}
-        {standings.length === 0 ? (
-          <p className="px-5 py-8 text-muted">No entries yet.</p>
-        ) : null}
-      </div>
-    </div>
-  );
-}
+      </section>
+    );
+  }
 
-function Stat({
-  label,
-  value,
-  href,
-}: {
-  label: string;
-  value: string | number;
-  href: string;
-}) {
+  const standings = rankEntries(pool);
+  const winner = standings.find((row) => row.eligible && row.total != null);
+  const winners = winner
+    ? standings.filter(
+        (row) => row.eligible && row.total != null && row.rank === winner.rank,
+      )
+    : [];
+  const message = (pool.settings.winnerMessage ?? "").trim();
+  const winnerNames = winners.map((row) => row.entry.name).join(" & ");
+
   return (
-    <Link href={href} className="panel p-5">
-      <p className="text-[11px] tracking-[0.16em] text-muted uppercase">{label}</p>
-      <p className="display mt-2 text-3xl text-pine">{value}</p>
-    </Link>
+    <section className="mx-auto max-w-2xl">
+      <div className="panel overflow-hidden">
+        <div className="bg-pine px-6 py-12 text-center text-cream sm:px-10">
+          <p className="text-[11px] tracking-[0.28em] text-gold-soft uppercase">
+            {pool.settings.year}
+            {pool.settings.clubName ? ` · ${pool.settings.clubName}` : ""}
+          </p>
+          <h1 className="display mt-4 text-5xl leading-none text-cream sm:text-6xl">
+            Congratulations
+          </h1>
+          {winner ? (
+            <>
+              <p className="display mt-6 text-3xl text-gold-soft sm:text-4xl">
+                {winnerNames}
+              </p>
+              <p className="score mt-3 text-2xl font-semibold">
+                {formatToPar(winner.toPar)}
+              </p>
+              <p className="mt-2 text-sm text-cream/70">
+                {winner.tied
+                  ? "Tied for first · winner takes all"
+                  : `${pool.settings.eventName} champion`}
+              </p>
+            </>
+          ) : (
+            <p className="mt-6 text-lg text-cream/80">
+              The pool champion will be posted here.
+            </p>
+          )}
+        </div>
+
+        {message ? (
+          <div className="border-t border-rule px-6 py-6 sm:px-10">
+            <p className="whitespace-pre-wrap text-lg leading-8 text-ink">
+              {message}
+            </p>
+          </div>
+        ) : null}
+
+        {winner ? (
+          <div className="border-t border-rule px-6 py-6 sm:px-10">
+            <p className="text-[11px] tracking-[0.16em] text-gold uppercase">
+              {winners.length > 1 ? "Winning squads" : "Winning squad"}
+            </p>
+            <div className={winners.length > 1 ? "mt-4 grid gap-6" : "mt-3"}>
+              {winners.map((row) => (
+                <div key={row.entry.id}>
+                  {winners.length > 1 ? (
+                    <p className="mb-2 font-medium text-pine">
+                      {row.entry.name}
+                    </p>
+                  ) : null}
+                  <ul className="space-y-1">
+                    {row.picks.map((pick) => (
+                      <li
+                        key={pick.golferId}
+                        className={`flex items-baseline justify-between gap-3 text-sm ${
+                          pick.voided ? "text-muted line-through" : "text-ink"
+                        }`}
+                      >
+                        <span>
+                          {pick.label}
+                          <span className="ml-2 text-xs text-muted">
+                            {groupLabel(pick.group)}
+                          </span>
+                        </span>
+                        <span className="score">
+                          {formatToPar(pick.toPar)}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ))}
+            </div>
+          </div>
+        ) : null}
+
+        <div className="border-t border-rule px-6 py-5 text-center">
+          <Link
+            href="/standings"
+            className="inline-flex rounded-sm bg-pine px-5 py-2.5 text-sm font-semibold text-cream"
+          >
+            View the full leaderboard
+          </Link>
+        </div>
+      </div>
+    </section>
   );
 }
