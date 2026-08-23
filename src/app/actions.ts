@@ -117,6 +117,7 @@ export async function saveSettings(
 
   const entriesOpen = formData.get("entriesOpen") === "1";
   const picksPublic = formData.get("picksPublic") === "1";
+  const winnerMessage = String(formData.get("winnerMessage") ?? "").trim();
   const groupCount = Math.min(
     6,
     Math.max(2, Math.round(Number(formData.get("groupCount")) || 4)),
@@ -135,6 +136,7 @@ export async function saveSettings(
     pool.settings.championId = championId;
     pool.settings.entriesOpen = entriesOpen;
     pool.settings.picksPublic = picksPublic;
+    pool.settings.winnerMessage = winnerMessage;
     pool.settings.groupCount = groupCount;
     pool.settings.entryFee = entryFee;
     pool.settings.etransferEmail = etransferEmail;
