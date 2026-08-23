@@ -29,6 +29,7 @@ export type Settings = {
   setupComplete: boolean;
   entriesOpen: boolean;
   picksPublic: boolean;
+  winnerMessage: string;
   entryFee: number;
   etransferEmail: string;
   pinHash: string;
@@ -86,6 +87,7 @@ export const DEFAULT_SETTINGS: Omit<Settings, "pinHash" | "pinSalt"> = {
   setupComplete: false,
   entriesOpen: true,
   picksPublic: false,
+  winnerMessage: "",
   entryFee: 15,
   etransferEmail: "wellsjack771@gmail.com",
 };
