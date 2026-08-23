@@ -14,8 +14,9 @@ export default async function SettingsPage() {
         </p>
         <h1 className="display mt-2 text-4xl text-pine">Settings</h1>
         <p className="mt-2 text-sm text-muted">
-          Open or close public entries, choose when squads go public, and set
-          how many groups people pick from. Scoring stays best{" "}
+          Open or close public entries, choose when squads go public, write the
+          congratulations message, and set how many groups people pick from.
+          Scoring stays best{" "}
           {pool.settings.groupCount * pool.settings.picksPerGroup -
             pool.settings.voidCount}{" "}
           of {pool.settings.groupCount * pool.settings.picksPerGroup}, with{" "}
