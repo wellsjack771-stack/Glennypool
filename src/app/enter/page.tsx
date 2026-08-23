@@ -24,7 +24,7 @@ export default async function EnterPage() {
       <Closed
         title="Entries are closed"
         body="The books are locked. Watch the leaderboard, or check back if entries open again."
-        href="/"
+        href="/standings"
         link="Leaderboard"
       />
     );
